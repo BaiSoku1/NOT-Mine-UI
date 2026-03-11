@@ -1,546 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✪ LUACODE VAULT ✪</title>
-    <style>
-        /* TAMPILAN OLD SCHOOL - NO AI VIBES */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        
-        body {
-            background: #0a0c0f;
-            background-image: radial-gradient(#1e2a3a 1px, transparent 1px);
-            background-size: 30px 30px;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-        }
-        
-        .terminal {
-            max-width: 1000px;
-            width: 100%;
-            border: 3px solid #2a3b4c;
-            background: #0f1419;
-            box-shadow: 0 0 0 2px #1e2a33, 0 10px 30px rgba(0,0,0,0.8);
-            position: relative;
-        }
-        
-        .terminal::before {
-            content: "⚡ LUACODE.EXE ⚡";
-            position: absolute;
-            top: -12px;
-            left: 20px;
-            background: #0f1419;
-            padding: 0 15px;
-            color: #7ec8e0;
-            font-weight: bold;
-            font-size: 16px;
-            border-left: 2px solid #2a3b4c;
-            border-right: 2px solid #2a3b4c;
-            letter-spacing: 2px;
-            text-shadow: 0 0 5px #00a6ff;
-        }
-        
-        .terminal-header {
-            background: #1e2a33;
-            padding: 15px 20px;
-            border-bottom: 2px solid #2a3b4c;
-            color: #a0d8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .led {
-            width: 12px;
-            height: 12px;
-            background: #40c040;
-            border-radius: 50%;
-            box-shadow: 0 0 10px #40c040;
-            animation: blink 2s infinite;
-        }
-        
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .system-info {
-            color: #607b8c;
-            font-size: 14px;
-        }
-        
-        .main-panel {
-            padding: 25px 20px;
-        }
-        
-        .script-area {
-            margin-bottom: 25px;
-            border: 2px solid #1e2a33;
-            background: #0b1014;
-        }
-        
-        .script-label {
-            background: #1e2a33;
-            padding: 8px 15px;
-            color: #b0e0ff;
-            font-weight: bold;
-            border-bottom: 1px solid #2a3b4c;
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-        }
-        
-        .script-label span:last-child {
-            color: #7ec8e0;
-            font-size: 12px;
-        }
-        
-        textarea {
-            width: 100%;
-            min-height: 280px;
-            background: #0b1014;
-            border: none;
-            padding: 18px;
-            color: #d4e8f0;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.6;
-            resize: vertical;
-            outline: none;
-        }
-        
-        textarea:focus {
-            background: #0d131a;
-            box-shadow: inset 0 0 10px rgba(0,160,255,0.3);
-        }
-        
-        .button-grid {
-            display: flex;
-            gap: 15px;
-            margin: 25px 0;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 12px 30px;
-            background: #1e2a33;
-            border: 2px solid #2a3b4c;
-            color: #c0d8e8;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.1s;
-            font-family: 'Courier New', monospace;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            flex: 1;
-            min-width: 150px;
-            box-shadow: 0 4px 0 #0f1a20;
-        }
-        
-        .btn:hover {
-            background: #2a3f4f;
-            border-color: #3a5f7a;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 0 #0f1a20;
-        }
-        
-        .btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 0px 0 #0f1a20;
-        }
-        
-        .btn-executor {
-            background: #2d4d3a;
-            border-color: #3d6b4a;
-            color: #b0ffb0;
-            text-shadow: 0 0 5px #00ff00;
-        }
-        
-        .output-console {
-            border: 2px solid #1e2a33;
-            background: #0b1014;
-            margin-top: 25px;
-        }
-        
-        .console-header {
-            background: #1e2a33;
-            padding: 8px 15px;
-            color: #b0e0ff;
-            border-bottom: 1px solid #2a3b4c;
-            font-weight: bold;
-            display: flex;
-            gap: 20px;
-            font-size: 13px;
-        }
-        
-        .console-content {
-            padding: 15px;
-            min-height: 80px;
-            color: #7ec8e0;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            word-break: break-all;
-        }
-        
-        .raw-section {
-            margin: 25px 0 15px;
-            padding: 15px;
-            border: 2px dashed #2a4a6a;
-            background: #0f1a24;
-        }
-        
-        .raw-title {
-            color: #ffb86b;
-            margin-bottom: 10px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .raw-link-container {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .raw-link-box {
-            flex: 1;
-            background: #0b1014;
-            border: 2px solid #1e2a33;
-            padding: 12px 15px;
-            color: #7ec8e0;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            word-break: break-all;
-        }
-        
-        .copy-btn {
-            padding: 12px 25px;
-            background: #2a3f4f;
-            border: 2px solid #3a5f7a;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .copy-btn:hover {
-            background: #3a5f7a;
-        }
-        
-        .footer-note {
-            margin-top: 25px;
-            padding: 15px;
-            background: #1a1f2a;
-            border-left: 6px solid #ffaa33;
-            color: #ccddee;
-            font-size: 13px;
-            border-radius: 0;
-        }
-        
-        .glitch {
-            color: #9ad0f0;
-            text-shadow: 2px 2px 0 #2a4f6a;
-        }
-        
-        hr {
-            border: none;
-            border-top: 2px solid #1e2a33;
-            margin: 20px 0;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Script Source</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+    margin:0;
+    background:#0f0f0f;
+    color:#fff;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+.container{
+    width:420px;
+    margin:120px auto;
+    background:#161616;
+    padding:25px;
+    border-radius:10px;
+    border:1px solid #2a2a2a;
+}
+
+h1{
+    font-size:20px;
+    margin-bottom:15px;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    background:#0d0d0d;
+    border:1px solid #333;
+    color:#fff;
+    border-radius:5px;
+}
+
+button{
+    margin-top:10px;
+    width:100%;
+    padding:10px;
+    background:#b30000;
+    border:none;
+    color:white;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#e00000;
+}
+
+.result{
+    margin-top:15px;
+    font-size:14px;
+    color:#aaa;
+}
+</style>
 </head>
+
 <body>
-    <div class="terminal">
-        <div class="terminal-header">
-            <div class="status">
-                <span class="led"></span>
-                <span class="glitch">LUACODE://ACTIVE</span>
-            </div>
-            <div class="system-info">
-                <span>ROBLOX EXEC • RAW MODE • ENCODED</span>
-            </div>
-        </div>
-        
-        <div class="main-panel">
-            <!-- SCRIPT INPUT AREA -->
-            <div class="script-area">
-                <div class="script-label">
-                    <span>> SCRIPT.LUA [EDIT RAW]</span>
-                    <span>⏎ PASTE YOUR LUACODE</span>
-                </div>
-                <textarea id="luaScript" placeholder="-- Paste script lua lu disini
-loadstring(game:HttpGet('https://raw.githubusercontent.com/example/script.lua'))()">-- Contoh script
-print("Script ready to execute")
-game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
 
--- paste script lu disini</textarea>
-            </div>
-            
-            <!-- BUTTON ACTIONS - LOOKS MANUAL/AUTHENTIC -->
-            <div class="button-grid">
-                <button class="btn" id="encodeBtn">[ ENCODE SCRIPT ]</button>
-                <button class="btn btn-executor" id="executorBtn">⏯ EXECUTE VIA EXECUTOR</button>
-                <button class="btn" id="resetBtn">[ RESET ]</button>
-            </div>
-            
-            <!-- RAW OUTPUT SECTION -->
-            <div class="raw-section" id="rawSection" style="display: none;">
-                <div class="raw-title">
-                    <span>⚡ RAW LINK GENERATED ⚡</span>
-                    <span style="color: #7ec8e0; font-size: 12px;">(copy link ke executor)</span>
-                </div>
-                <div class="raw-link-container">
-                    <div class="raw-link-box" id="rawLinkDisplay">https://raw.luacode/encoded/xxx</div>
-                    <button class="copy-btn" id="copyRawBtn">[ COPY RAW ]</button>
-                </div>
-                <div style="color: #909090; margin-top: 12px; font-size: 12px;">
-                    ✦ PASTE LINK DI EXECUTOR LU ➔ loadstring(game:HttpGet('LINK'))()
-                </div>
-            </div>
-            
-            <!-- CONSOLE OUTPUT -->
-            <div class="output-console">
-                <div class="console-header">
-                    <span>$ CONSOLE OUTPUT</span>
-                    <span style="color: #ffaa33;">> READY</span>
-                </div>
-                <div class="console-content" id="consoleOutput">
-                    [*] System initialized. Paste your Lua script.
-                </div>
-            </div>
-            
-            <!-- FOOTER NOTE - LOOKS AUTHENTIC/HUMAN -->
-            <div class="footer-note">
-                <strong>🔒 LUACODE VAULT v2.1:</strong> Script diencode pake base64 + reverse. 
-                Yang mau curi script bakal dapet code random. Buat execute tinggal copy link RAW 
-                dan paste di executor: <span style="background: #1e2a33; padding: 4px 8px;">loadstring(game:HttpGet('LINK'))()</span>
-                <br><br>
-                <span style="color: #ffaa33;">⏎ RAW MODE: script ga bakal keliatan di source, cuma link doang.</span>
-            </div>
-        </div>
-    </div>
+<div class="container">
+<h1>Apply Script Source</h1>
 
-    <script>
-        // MANUAL SCRIPT - NO AI GENERATED VIBES
-        (function() {
-            // ===== ELEMENTS =====
-            const luaScript = document.getElementById('luaScript');
-            const encodeBtn = document.getElementById('encodeBtn');
-            const executorBtn = document.getElementById('executorBtn');
-            const resetBtn = document.getElementById('resetBtn');
-            const rawSection = document.getElementById('rawSection');
-            const rawLinkDisplay = document.getElementById('rawLinkDisplay');
-            const copyRawBtn = document.getElementById('copyRawBtn');
-            const consoleOutput = document.getElementById('consoleOutput');
-            
-            // ===== STORAGE =====
-            const STORAGE_KEY = 'lua_vault_data';
-            const BASE_URL = window.location.href.split('#')[0];
-            
-            // ===== FUNCTIONS =====
-            function encodeLua(script) {
-                // encode base64 + reverse biar tambah ribet
-                try {
-                    let encoded = btoa(unescape(encodeURIComponent(script)));
-                    // reverse string biar gampang di decode tapi agak obscure
-                    return encoded.split('').reverse().join('');
-                } catch(e) {
-                    return null;
-                }
-            }
-            
-            function decodeLua(encoded) {
-                try {
-                    // reverse balikin
-                    let reversed = encoded.split('').reverse().join('');
-                    return decodeURIComponent(escape(atob(reversed)));
-                } catch(e) {
-                    return null;
-                }
-            }
-            
-            function saveToVault(encoded) {
-                localStorage.setItem(STORAGE_KEY, encoded);
-            }
-            
-            function getFromVault() {
-                return localStorage.getItem(STORAGE_KEY);
-            }
-            
-            function clearVault() {
-                localStorage.removeItem(STORAGE_KEY);
-            }
-            
-            function generateRawLink() {
-                // pake parameter biar keliatan lebih "raw"
-                return BASE_URL + '?raw=' + Date.now() + '#' + Math.random().toString(36).substring(7);
-            }
-            
-            function updateConsole(msg, type = 'info') {
-                const time = new Date().toLocaleTimeString();
-                if(type === 'success') {
-                    consoleOutput.innerHTML = `[${time}] ✓ ${msg}`;
-                } else if(type === 'error') {
-                    consoleOutput.innerHTML = `[${time}] ✗ ${msg}`;
-                } else {
-                    consoleOutput.innerHTML = `[${time}] * ${msg}`;
-                }
-            }
-            
-            // ===== MAIN LOGIC =====
-            encodeBtn.addEventListener('click', function() {
-                const rawScript = luaScript.value.trim();
-                
-                if(!rawScript) {
-                    updateConsole('Script kosong bro!', 'error');
-                    return;
-                }
-                
-                // Encode script
-                const encoded = encodeLua(rawScript);
-                if(!encoded) {
-                    updateConsole('Encoding failed - cek script', 'error');
-                    return;
-                }
-                
-                // Simpan
-                saveToVault(encoded);
-                
-                // Tampilkan link
-                const rawLink = generateRawLink();
-                rawLinkDisplay.innerText = rawLink;
-                rawSection.style.display = 'block';
-                
-                updateConsole('Script encoded & RAW link siap!', 'success');
-            });
-            
-            // EXECUTE VIA EXECUTOR - langsung inject ke executor eksternal
-            executorBtn.addEventListener('click', function() {
-                const encoded = getFromVault();
-                
-                if(!encoded) {
-                    updateConsole('Ga ada script di vault. Encode dulu bro!', 'error');
-                    return;
-                }
-                
-                const decoded = decodeLua(encoded);
-                if(!decoded) {
-                    updateConsole('Script corrupted - encode ulang', 'error');
-                    return;
-                }
-                
-                // Ini bakal nampilin script di console buat di copy manual
-                // Soalnya browser gak bisa langsung inject ke executor Roblox
-                updateConsole('=== SCRIPT DECODED (copy ini ke executor) ===', 'info');
-                
-                // Buat alert biar keliatan manual
-                alert('🔰 MANUAL EXECUTE\n\nCopy script dibawah ini ke executor lu:\n\n' + decoded.substring(0, 200) + (decoded.length > 200 ? '...' : ''));
-                
-                // Tampilkan di console juga
-                console.log('=== LUASCRIPT DECODED ===');
-                console.log(decoded);
-                console.log('=== END ===');
-                
-                // Kasih tau cara pake loadstring
-                if(rawSection.style.display === 'block') {
-                    updateConsole('PASTE LINK ATAU SCRIPT MANUAL KE EXECUTOR', 'success');
-                }
-            });
-            
-            // COPY RAW LINK
-            copyRawBtn.addEventListener('click', function() {
-                const link = rawLinkDisplay.innerText;
-                navigator.clipboard.writeText(link).then(() => {
-                    copyRawBtn.innerText = '[ COPIED! ]';
-                    updateConsole('RAW link copied!', 'success');
-                    setTimeout(() => {
-                        copyRawBtn.innerText = '[ COPY RAW ]';
-                    }, 2000);
-                });
-            });
-            
-            // RESET
-            resetBtn.addEventListener('click', function() {
-                if(confirm('Reset semua? Script akan kehapus.')) {
-                    luaScript.value = '';
-                    clearVault();
-                    rawSection.style.display = 'none';
-                    updateConsole('System reset - ready', 'info');
-                }
-            });
-            
-            // Check vault on load
-            (function init() {
-                const stored = getFromVault();
-                if(stored) {
-                    rawSection.style.display = 'block';
-                    rawLinkDisplay.innerText = generateRawLink();
-                    updateConsole('Script tersimpan di vault. Klik EXECUTE untuk jalanin.', 'info');
-                    
-                    // Decode preview buat ngecek
-                    try {
-                        const decoded = decodeLua(stored);
-                        if(decoded) {
-                            luaScript.value = decoded;
-                        }
-                    } catch(e) {}
-                }
-            })();
-            
-            // Handle parameter raw execution (untuk loadstring dari eksternal)
-            if(window.location.hash || window.location.search.includes('raw')) {
-                const stored = getFromVault();
-                if(stored) {
-                    const decoded = decodeLua(stored);
-                    if(decoded) {
-                        // Ini bakal muncul di console buat executor kalo akses link
-                        console.log('=== AUTO EXECUTE SCRIPT ===');
-                        console.log(decoded);
-                        console.log('=== COPY SCRIPT DI ATAS ===');
-                        
-                        // Tampilkan notif kecil
-                        const notif = document.createElement('div');
-                        notif.style.position = 'fixed';
-                        notif.style.bottom = '20px';
-                        notif.style.right = '20px';
-                        notif.style.background = '#1e2a33';
-                        notif.style.border = '3px solid #7ec8e0';
-                        notif.style.padding = '15px';
-                        notif.style.color = '#b0e0ff';
-                        notif.style.fontFamily = 'Courier New';
-                        notif.style.zIndex = '9999';
-                        notif.style.maxWidth = '300px';
-                        notif.innerHTML = '<strong>🔰 RAW MODE ACTIVE</strong><br><br>Script siap di execute. Copy dari console (F12).';
-                        document.body.appendChild(notif);
-                        
-                        setTimeout(() => {
-                            notif.remove();
-                        }, 5000);
-                    }
-                }
-            }
-        })();
-    </script>
+<input type="text" id="key" placeholder="Enter Access Key">
+
+<button onclick="apply()">Apply</button>
+
+<div class="result" id="result"></div>
+</div>
+
+<script>
+function apply(){
+
+let key = document.getElementById("key").value
+
+fetch("api.php?key="+key)
+.then(r=>r.text())
+.then(t=>{
+
+document.getElementById("result").innerText = t
+
+})
+}
+</script>
+
 </body>
 </html>
