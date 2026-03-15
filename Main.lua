@@ -1,4 +1,3 @@
-
 -- Perbaiki: Definisi fungsi yang hilang
 local checkcaller = checkcaller or function() return true end
 
@@ -552,6 +551,22 @@ MainTab:AddToggle("TracerDowned", {
         coroutine.resume(getgenv().tracerThread)
     end
 })
+
+local LupenESPModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/Ksjsowos/29401/refs/heads/main/Test%20Script/LupenESP.lua"))()
+LupenESPModule:Init(Fluent, Options)
+
+MainTab:AddToggle("LupenESPToggle", {
+    Title = "ESP Lupen",
+    Default = false,
+    Callback = function(state)
+        if state then
+            LupenESPModule:Start()
+        else
+            LupenESPModule:Stop()
+        end
+    end
+})
+
 
 MainTab:AddSection("Fly", "apple")
 
@@ -2962,12 +2977,12 @@ getgenv().LagSwitchMode = getgenv().LagSwitchMode or "Normal"
 local fflagEnabled = false
 
 local function SetFFlag(val)
-    pcall(function() 
-        setfflag("MaxMissedWorldStepsRemembered", tostring(val)) 
+    pcall(function()
+        setfflag("MaxMissedWorldStepsRemembered", tostring(val))
     end)
 end
 
--- Loop untuk FFlag jika mode Demon
+-- Loop FFlag
 task.spawn(function()
     while true do
         if fflagEnabled then
@@ -2983,130 +2998,122 @@ local function triggerLagSwitch()
         local duration = getgenv().LagSwitchDuration
         
         if getgenv().LagSwitchMode == "Normal" then
-            -- Mode Normal: loop matematika sederhana
             while tick() - start < duration do
                 for i = 1, 10000 do
-                    math.random(1, 1000000)
+                    math.random(1,1000000)
                 end
             end
-        else -- Mode Demon
-            -- Mode Demon: aktifkan FFlag dan loop matematika
-            fflagEnabled = true
+        else
             while tick() - start < duration do
                 for i = 1, 20000 do
-                    math.random(1, 1000000)
-                    -- Tambahan operasi berat untuk lag lebih signifikan
+                    math.random(1,1000000)
                     local x = math.sqrt(i * 12345)
                     local y = math.sin(x) * math.cos(x)
                 end
             end
-            fflagEnabled = false
         end
     end)
 end
 
 local function createLagSwitchGUI()
-    if PlayerGui:FindFirstChild("LagSwitchGUI") then 
-        PlayerGui.LagSwitchGUI:Destroy() 
+
+    if game.Players.LocalPlayer.PlayerGui:FindFirstChild("LagSwitchGUI") then
+        game.Players.LocalPlayer.PlayerGui.LagSwitchGUI:Destroy()
     end
-    
+
     local gui = Instance.new("ScreenGui")
     gui.Name = "LagSwitchGUI"
     gui.ResetOnSpawn = false
-    gui.Parent = PlayerGui
+    gui.Parent = game.Players.LocalPlayer.PlayerGui
     gui.Enabled = false
-    
+
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0, 220, 0, 44)
-    btn.Position = getgenv().LagSwitchPosition or UDim2.new(0.5, -110, 0, 120)
-    btn.AnchorPoint = Vector2.new(0.5, 0)
-    btn.Text = "Lag Switch (" .. getgenv().LagSwitchMode .. ")"
+    btn.Size = UDim2.new(0,220,0,44)
+    btn.Position = getgenv().LagSwitchPosition or UDim2.new(0.5,-110,0,120)
+    btn.AnchorPoint = Vector2.new(0.5,0)
+    btn.Text = "Lag Switch ("..getgenv().LagSwitchMode..")"
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 20
-    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.TextColor3 = Color3.new(1,1,1)
     btn.AutoButtonColor = false
     btn.BackgroundTransparency = 0.15
     btn.Parent = gui
-    
+
     local gradient = Instance.new("UIGradient")
-    gradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(64, 224, 208)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 149, 237))
-    })
+    gradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0,Color3.fromRGB(64,224,208)),
+        ColorSequenceKeypoint.new(0.5,Color3.fromRGB(255,255,255)),
+        ColorSequenceKeypoint.new(1,Color3.fromRGB(100,149,237))
+    }
     gradient.Rotation = 45
     gradient.Parent = btn
-    
-    local uiCorner = Instance.new("UICorner")
-    uiCorner.CornerRadius = UDim.new(1, 0)
-    uiCorner.Parent = btn
-    
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(1,0)
+    corner.Parent = btn
+
     local stroke = Instance.new("UIStroke")
     stroke.Thickness = 1.5
-    stroke.Color = Color3.new(1, 1, 1)
+    stroke.Color = Color3.new(1,1,1)
     stroke.Transparency = 0.3
     stroke.Parent = btn
-    
-    -- SISTEM DRAG
-    local dragging, dragInput, dragStart, startPos = false, nil, nil, nil
-    
+
+    -- drag
+    local dragging, dragInput, dragStart, startPos
+
     local function update(input)
         local delta = input.Position - dragStart
-        btn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        btn.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
     end
-    
+
     btn.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        if input.UserInputType.Name == "MouseButton1" or input.UserInputType.Name == "Touch" then
             dragging = true
-            dragInput = input
             dragStart = input.Position
             startPos = btn.Position
-            
+
             input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
+                if input.UserInputState.Name == "End" then
                     dragging = false
                     getgenv().LagSwitchPosition = btn.Position
                 end
             end)
         end
     end)
-    
+
     btn.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        if input.UserInputType.Name == "MouseMovement" or input.UserInputType.Name == "Touch" then
             dragInput = input
         end
     end)
-    
-    UserInputService.InputChanged:Connect(function(input)
+
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
         if dragging and input == dragInput then
             update(input)
         end
     end)
-    
-    btn.MouseEnter:Connect(function() 
-        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.3}):Play() 
-    end)
-    
-    btn.MouseLeave:Connect(function() 
-        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.15}):Play() 
-    end)
-    
+
     btn.MouseButton1Click:Connect(function()
         if not dragging then
             triggerLagSwitch()
         end
     end)
-    
+
     return gui
 end
 
 local lagSwitchGUI
 
-MiscTab:AddToggle("LagSwitch", {
+MiscTab:AddToggle("LagSwitch",{
     Title = "Lag Switch",
-    Description = "Enable lag switch GUI",
     Default = false,
     Callback = function(state)
+
         if state then
             if not lagSwitchGUI or not lagSwitchGUI.Parent then
                 lagSwitchGUI = createLagSwitchGUI()
@@ -3118,55 +3125,51 @@ MiscTab:AddToggle("LagSwitch", {
                 fflagEnabled = false
             end
         end
+
     end
 })
 
-MiscTab:AddDropdown("LagSwitchMode", {
+MiscTab:AddDropdown("LagSwitchMode",{
     Title = "Lag Switch Mode",
-    Description = "Choose lag switch mode",
-    Values = {"Normal", "Demon"},
+    Values = {"Normal","Demon"},
     Default = getgenv().LagSwitchMode,
     Callback = function(value)
+
         getgenv().LagSwitchMode = value
+
+        if value == "Demon" then
+            fflagEnabled = true
+        else
+            fflagEnabled = false
+        end
+
         if lagSwitchGUI and lagSwitchGUI.Enabled then
             local btn = lagSwitchGUI:FindFirstChildOfClass("TextButton")
             if btn then
-                btn.Text = "Lag Switch (" .. value .. ")"
+                btn.Text = "Lag Switch ("..value..")"
             end
         end
+
     end
 })
 
-MiscTab:AddInput("LagSwitchDuration", {
-    Title = "Lag Duration (seconds)",
-    Description = "Set lag switch duration",
+MiscTab:AddInput("LagSwitchDuration",{
+    Title = "Lag Duration",
     Default = tostring(getgenv().LagSwitchDuration),
     Placeholder = "0.5",
     Numeric = true,
     Callback = function(value)
+
         local num = tonumber(value)
+
         if num and num > 0 then
             getgenv().LagSwitchDuration = num
         else
             getgenv().LagSwitchDuration = 0.5
         end
+
     end
 })
-
--- Freeze Logic (gabungan dengan kode yang diberikan)
-local freezeBtn = Instance.new("TextButton")
-local timeInput = Instance.new("TextBox")
-local statusLabel = Instance.new("TextLabel")
-
-freezeBtn.Activated:Connect(function()
-    local duration = tonumber(timeInput.Text) or 0.09
-    freezeBtn.Text = "FREEZING..."
-    statusLabel.Text = "BUSY..."
-    -- Tambahkan logika freeze di sini
-    task.wait(duration)
-    freezeBtn.Text = "FREEZE"
-    statusLabel.Text = "READY"
-end)
 
 MiscTab:AddSection("auto respawn")
 
@@ -4746,7 +4749,7 @@ local function startAntiAFK()
     end)
 end
 
-MiscTab:AddToggle("AntiAFK", {
+AutoFarmsTab:AddToggle("AntiAFK", {
     Title = "Anti AFK",
     Description = "Prevent being kicked for AFK",
     Default = false,
@@ -4755,6 +4758,95 @@ MiscTab:AddToggle("AntiAFK", {
         if state then startAntiAFK() end
     end
 })
+
+
+AutoFarmsTab:AddSection("Lupen Farm")
+
+local AutoLupenConnection
+local AutoLupenEnabled = false
+local RotationAngle = 0
+local RotationRadius = 1.2
+local RotationSpeed = 8
+
+local function findLupen()
+    local gamePlayers = workspace:FindFirstChild("Game") and workspace.Game:FindFirstChild("Players")
+    if not gamePlayers then return end
+    local lupen = gamePlayers:FindFirstChild("Lupen")
+    if not lupen then
+        for _,v in pairs(gamePlayers:GetChildren()) do
+            if string.find(v.Name:lower(),"lupen") then
+                lupen = v
+                break
+            end
+        end
+    end
+    return lupen
+end
+
+local function startAutoLupen()
+    if AutoLupenConnection then return end
+    RotationAngle = 0
+    AutoLupenConnection = game.RunService.Heartbeat:Connect(function()
+        if not AutoLupenEnabled then return end
+        local character = LocalPlayer.Character
+        if not character then return end
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+        if character:GetAttribute("Downed") then
+            pcall(function()
+                game.ReplicatedStorage.Events.Player.ChangePlayerMode:FireServer(true)
+            end)
+            return
+        end
+        local lupen = findLupen()
+        if not lupen then return end
+        local lupenHRP = lupen:FindFirstChild("HumanoidRootPart")
+        if not lupenHRP then return end
+        RotationAngle = (RotationAngle + RotationSpeed) % 360
+        local rad = math.rad(RotationAngle)
+        local offset = Vector3.new(math.cos(rad) * RotationRadius,1.5,math.sin(rad) * RotationRadius)
+        local targetPos = lupenHRP.Position + offset
+        hrp.CFrame = CFrame.new(targetPos,lupenHRP.Position)
+    end)
+    Fluent:Notify({
+        Title = "Auto Farm Lupen",
+        Content = "Following Lupen...",
+        Duration = 3
+    })
+end
+
+local function stopAutoLupen()
+    if AutoLupenConnection then
+        AutoLupenConnection:Disconnect()
+        AutoLupenConnection = nil
+    end
+    Fluent:Notify({
+        Title = "Auto Farm Lupen",
+        Content = "Stopped.",
+        Duration = 3
+    })
+end
+
+AutoFarmsTab:AddToggle("AutoLupenToggle", {
+    Title = "Auto Farm Lupen",
+    Default = false,
+    Callback = function(state)
+        AutoLupenEnabled = state
+        if state then
+            startAutoLupen()
+        else
+            stopAutoLupen()
+        end
+    end
+})
+
+LocalPlayer.CharacterAdded:Connect(function()
+    if AutoLupenEnabled then
+        task.wait(1)
+        stopAutoLupen()
+        startAutoLupen()
+    end
+end)
 
 -- Auto Farms di AutoFarmsTab
 getgenv().AutoTicketFarm = false
