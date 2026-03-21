@@ -2,7 +2,7 @@
     PREMIUM MODERN SILVER UI (V11) - WITH KEY SYSTEM & ANIMATED TITLE
     - Style: Compact & Refined
     - Features: URL Loader, Animated Title (letter by letter), Key System
-    - Usage: loadstring(game:HttpGet("https://raw.githubusercontent.com/BaiSoku1/Fluent/refs/heads/main/Main.lua"))()
+    - Usage: loadstring(game:HttpGet("YOUR_URL_HERE"))()
 ]]
 
 local Library = {}
@@ -67,7 +67,7 @@ function Library:Notify(title, content, duration)
     end)
 end
 
--- Function to create animated title with individual letters
+-- Function to create animated title with individual letters (1 second delay between letters)
 local function CreateAnimatedTitle(parent, titleText, position, size, textSize)
     local TweenService = game:GetService("TweenService")
     textSize = textSize or 14
@@ -111,10 +111,10 @@ local function CreateAnimatedTitle(parent, titleText, position, size, textSize)
         table.insert(letterLabels, letterLabel)
     end
     
-    -- Animate letters appearing one by one
+    -- Animate letters appearing one by one with 1 second delay
     for i, letterLabel in ipairs(letterLabels) do
         letterLabel.TextTransparency = 1
-        task.wait(0.05)
+        task.wait(1) -- Changed from 0.05 to 1 second delay
         TweenService:Create(letterLabel, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
             TextTransparency = 0
         }):Play()
@@ -145,9 +145,9 @@ local function ShowKeySystem(config, callback)
         Parent = screenGui
     })
     
-    -- Key window
+    -- Key window with red/black theme
     local KeyWindow = Create("Frame", {
-        Size = UDim2.fromOffset(420, 380),
+        Size = UDim2.fromOffset(420, 420),
         Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = Color3.fromRGB(8, 8, 8),
@@ -164,7 +164,7 @@ local function ShowKeySystem(config, callback)
         Parent = KeyWindow
     })
     
-    -- Create animated title for key window
+    -- Create animated title for key window with 1 second delay
     local letters = {}
     for i = 1, #titleText do
         table.insert(letters, string.sub(titleText, i, i))
@@ -192,10 +192,10 @@ local function ShowKeySystem(config, callback)
         table.insert(letterLabels, letterLabel)
     end
     
-    -- Animate key window title
+    -- Animate key window title with 1 second delay
     for i, letterLabel in ipairs(letterLabels) do
         letterLabel.TextTransparency = 1
-        task.wait(0.05)
+        task.wait(1) -- Changed from 0.05 to 1 second delay
         TweenService:Create(letterLabel, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
             TextTransparency = 0
         }):Play()
@@ -238,15 +238,28 @@ local function ShowKeySystem(config, callback)
         Parent = KeyBox
     })
     
-    -- Submit button
+    -- Get Key button (NEW)
+    local GetKeyBtn = Create("TextButton", {
+        Size = UDim2.new(0.85, 0, 0, 40),
+        Position = UDim2.new(0.5, -170, 0, 155),
+        BackgroundColor3 = Color3.fromRGB(139, 0, 0), -- Dark red
+        Text = "GET KEY",
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Parent = KeyWindow
+    }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
+    ApplyPremiumBorder(GetKeyBtn, 1.5)
+    
+    -- Submit button with red theme
     local SubmitBtn = Create("TextButton", {
         Size = UDim2.new(0.85, 0, 0, 40),
-        Position = UDim2.new(0.5, -170, 0, 165),
-        BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+        Position = UDim2.new(0.5, -170, 0, 205),
+        BackgroundColor3 = Color3.fromRGB(180, 0, 0), -- Bright red
         Text = "VERIFY KEY",
         Font = Enum.Font.GothamBold,
         TextSize = 12,
-        TextColor3 = Color3.fromRGB(220, 220, 220),
+        TextColor3 = Color3.fromRGB(255, 255, 255),
         Parent = KeyWindow
     }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
     ApplyPremiumBorder(SubmitBtn, 1.5)
@@ -258,10 +271,22 @@ local function ShowKeySystem(config, callback)
         TextSize = 10,
         TextColor3 = Color3.fromRGB(150, 150, 150),
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 0, 220),
+        Position = UDim2.new(0, 0, 0, 260),
         Size = UDim2.new(1, 0, 0, 30),
         Parent = KeyWindow
     })
+    
+    -- Get Key button functionality
+    GetKeyBtn.MouseButton1Click:Connect(function()
+        -- Add your key acquisition link here
+        local keyLink = config.KeyLink or "https://example.com/getkey"
+        setclipboard(keyLink)
+        StatusText.Text = "✓ Key link copied to clipboard!"
+        StatusText.TextColor3 = Color3.fromRGB(100, 255, 100)
+        task.wait(2)
+        StatusText.Text = "Waiting for key..."
+        StatusText.TextColor3 = Color3.fromRGB(150, 150, 150)
+    end)
     
     -- Verify function
     local function VerifyKey(key)
@@ -350,7 +375,7 @@ local function ShowKeySystem(config, callback)
     -- Animate window popup
     KeyWindow.Size = UDim2.fromOffset(0, 0)
     TweenService:Create(KeyWindow, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = UDim2.fromOffset(420, 380)
+        Size = UDim2.fromOffset(420, 420)
     }):Play()
 end
 
@@ -438,13 +463,13 @@ function Library:CreateWindow(config)
             MainFrame.Visible = not MainFrame.Visible
             if MainFrame.Visible then 
                 MainFrame:TweenSize(UDim2.fromOffset(420, 280), "Out", "Back", 0.4, true)
-                -- Re-animate title when window opens
+                -- Re-animate title when window opens with 1 second delay
                 if titleContainer and letterLabels then
                     for _, letterLabel in ipairs(letterLabels) do
                         letterLabel.TextTransparency = 1
                     end
                     for i, letterLabel in ipairs(letterLabels) do
-                        task.wait(0.05)
+                        task.wait(1) -- Changed from 0.05 to 1 second delay
                         TweenService:Create(letterLabel, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
                             TextTransparency = 0
                         }):Play()
@@ -459,7 +484,7 @@ function Library:CreateWindow(config)
             Parent = MainFrame
         })
         
-        -- Create animated title with letter-by-letter display
+        -- Create animated title with letter-by-letter display (1 second delay)
         titleContainer, letterLabels = CreateAnimatedTitle(TopBar, titleText, UDim2.fromOffset(12, 0), UDim2.new(1, -60, 1, 0), 14)
         
         -- Add author text if provided
