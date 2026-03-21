@@ -1,8 +1,7 @@
 --[[ 
-    PREMIUM MODERN SILVER UI (V11) - FINAL WORKING
+    PREMIUM MODERN SILVER UI (V12) - WITH KEY SYSTEM & ANIMATED TITLE
     - Style: Compact & Refined
-    - Features: Animated Title (letter by letter), Complete Key System
-    - Key Methods: Local Keys, URL Get Key (copy to clipboard), API Support
+    - Features: URL Loader, Animated Title (letter by letter), Key System, Get Key Button, Transparency
     - Usage: loadstring(game:HttpGet("YOUR_URL_HERE"))()
 ]]
 
@@ -10,12 +9,8 @@ local Library = {}
 
 local function Create(class, props, children)
     local obj = Instance.new(class)
-    for k, v in pairs(props or {}) do
-        obj[k] = v
-    end
-    for _, c in pairs(children or {}) do
-        c.Parent = obj
-    end
+    for k,v in pairs(props or {}) do obj[k] = v end
+    for _,c in pairs(children or {}) do c.Parent = obj end
     return obj
 end
 
@@ -55,26 +50,24 @@ function Library:Notify(title, content, duration)
     local TweenService = game:GetService("TweenService")
     
     local duration = duration or 5
-    local NotifGui = Player:WaitForChild("PlayerGui"):FindFirstChild("ModernNotifs") or Create("ScreenGui", { Name = "ModernNotifs", Parent = (game:GetService("CoreGui") or Player:WaitForChild("PlayerGui")) })
-    local Holder = NotifGui:FindFirstChild("Holder") or Create("Frame", { Name = "Holder", Size = UDim2.new(0, 220, 1, -20), Position = UDim2.new(1, -230, 0, 10), BackgroundTransparency = 1, Parent = NotifGui }, { Create("UIListLayout", { VerticalAlignment = "Bottom", Padding = UDim.new(0, 8), HorizontalAlignment = "Right" }) })
+    local NotifGui = Player:WaitForChild("PlayerGui"):FindFirstChild("ModernNotifs") or Create("ScreenGui", {Name = "ModernNotifs", Parent = (game:GetService("CoreGui") or Player:WaitForChild("PlayerGui"))})
+    local Holder = NotifGui:FindFirstChild("Holder") or Create("Frame", {Name = "Holder", Size = UDim2.new(0, 220, 1, -20), Position = UDim2.new(1, -230, 0, 10), BackgroundTransparency = 1, Parent = NotifGui}, {Create("UIListLayout", {VerticalAlignment = "Bottom", Padding = UDim.new(0, 8), HorizontalAlignment = "Right"})})
 
-    local Notif = Create("Frame", { Size = UDim2.new(1, 0, 0, 60), BackgroundColor3 = Color3.fromRGB(10, 10, 10), Parent = Holder }, { Create("UICorner", { CornerRadius = UDim.new(0, 6) }) })
+    local Notif = Create("Frame", {Size = UDim2.new(1, 0, 0, 60), BackgroundColor3 = Color3.fromRGB(10, 10, 10), Parent = Holder}, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
     ApplyPremiumBorder(Notif, 2)
 
-    Create("TextLabel", { Text = title:upper(), Font = Enum.Font.GothamBold, TextSize = 11, TextColor3 = Color3.fromRGB(255, 255, 255), TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(10, 8), Size = UDim2.new(1, -40, 0, 15), Parent = Notif })
-    Create("TextLabel", { Text = content, Font = Enum.Font.GothamMedium, TextSize = 10, TextColor3 = Color3.fromRGB(180, 180, 180), TextXAlignment = "Left", TextYAlignment = "Top", TextWrapped = true, BackgroundTransparency = 1, Position = UDim2.fromOffset(10, 25), Size = UDim2.new(1, -20, 0, 30), Parent = Notif })
+    Create("TextLabel", {Text = title:upper(), Font = Enum.Font.GothamBold, TextSize = 11, TextColor3 = Color3.fromRGB(255, 255, 255), TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(10, 8), Size = UDim2.new(1, -40, 0, 15), Parent = Notif})
+    Create("TextLabel", {Text = content, Font = Enum.Font.GothamMedium, TextSize = 10, TextColor3 = Color3.fromRGB(180, 180, 180), TextXAlignment = "Left", TextYAlignment = "Top", TextWrapped = true, BackgroundTransparency = 1, Position = UDim2.fromOffset(10, 25), Size = UDim2.new(1, -20, 0, 30), Parent = Notif})
 
     Notif.Position = UDim2.new(1.5, 0, 0, 0)
-    TweenService:Create(Notif, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Position = UDim2.new(0, 0, 0, 0) }):Play()
+    TweenService:Create(Notif, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)}):Play()
     task.delay(duration, function()
-        local t = TweenService:Create(Notif, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { Position = UDim2.new(1.5, 0, 0, 0), BackgroundTransparency = 1 })
-        t:Play()
-        t.Completed:Connect(function()
-            Notif:Destroy()
-        end)
+        local t = TweenService:Create(Notif, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Position = UDim2.new(1.5, 0, 0, 0), BackgroundTransparency = 1})
+        t:Play() t.Completed:Connect(function() Notif:Destroy() end)
     end)
 end
 
+-- Function to create animated title with individual letters
 local function CreateAnimatedTitle(parent, titleText, position, size, textSize)
     local TweenService = game:GetService("TweenService")
     textSize = textSize or 14
@@ -86,12 +79,14 @@ local function CreateAnimatedTitle(parent, titleText, position, size, textSize)
         Parent = parent
     })
     
+    -- Split title into individual characters
     local letters = {}
     for i = 1, #titleText do
         local char = string.sub(titleText, i, i)
         table.insert(letters, char)
     end
     
+    -- Create letter labels
     local letterLabels = {}
     local totalWidth = 0
     
@@ -102,13 +97,13 @@ local function CreateAnimatedTitle(parent, titleText, position, size, textSize)
             TextSize = textSize,
             TextColor3 = Color3.fromRGB(230, 230, 230),
             BackgroundTransparency = 1,
-            Size = UDim2.new(0, letter == " " and (textSize / 2) or textSize + 4, 1, 0),
+            Size = UDim2.new(0, letter == " " and (textSize/2) or textSize + 4, 1, 0),
             Position = UDim2.new(0, totalWidth, 0, 0),
             Parent = titleContainer
         })
         
         if letter == " " then
-            totalWidth = totalWidth + (textSize / 2)
+            totalWidth = totalWidth + (textSize/2)
         else
             totalWidth = totalWidth + (textSize + 4)
         end
@@ -116,6 +111,7 @@ local function CreateAnimatedTitle(parent, titleText, position, size, textSize)
         table.insert(letterLabels, letterLabel)
     end
     
+    -- Animate letters appearing one by one
     for i, letterLabel in ipairs(letterLabels) do
         letterLabel.TextTransparency = 1
         task.wait(0.05)
@@ -127,12 +123,13 @@ local function CreateAnimatedTitle(parent, titleText, position, size, textSize)
     return titleContainer, letterLabels
 end
 
+-- Key System Functions
 local function ShowKeySystem(config, callback)
     local Players = game:GetService("Players")
     local Player = Players.LocalPlayer
     local TweenService = game:GetService("TweenService")
     local UserInputService = game:GetService("UserInputService")
-    local Clipboard = game:GetService("Clipboard")
+    local HttpService = game:GetService("HttpService")
     
     local screenGui = Create("ScreenGui", {
         Name = "KeySystemUI",
@@ -140,6 +137,7 @@ local function ShowKeySystem(config, callback)
         Parent = game:GetService("CoreGui") or Player:WaitForChild("PlayerGui")
     })
     
+    -- Background blur
     local Background = Create("Frame", {
         Size = UDim2.new(1, 0, 1, 0),
         BackgroundColor3 = Color3.fromRGB(0, 0, 0),
@@ -147,17 +145,18 @@ local function ShowKeySystem(config, callback)
         Parent = screenGui
     })
     
+    -- Key window
     local KeyWindow = Create("Frame", {
-        Size = UDim2.fromOffset(420, 400),
+        Size = UDim2.fromOffset(420, 380),
         Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = Color3.fromRGB(8, 8, 8),
         Parent = screenGui
-    }, { Create("UICorner", { CornerRadius = UDim.new(0, 12) }) })
+    }, {Create("UICorner", {CornerRadius = UDim.new(0, 12)})})
     ApplyPremiumBorder(KeyWindow, 2.5)
     
     -- Animated Title
-    local titleText = "KEY SYSTEM"
+    local titleText = config.Title or "KEY SYSTEM"
     local titleContainer = Create("Frame", {
         Size = UDim2.new(1, 0, 0, 50),
         Position = UDim2.fromOffset(0, 0),
@@ -165,6 +164,7 @@ local function ShowKeySystem(config, callback)
         Parent = KeyWindow
     })
     
+    -- Create animated title for key window
     local letters = {}
     for i = 1, #titleText do
         table.insert(letters, string.sub(titleText, i, i))
@@ -176,22 +176,23 @@ local function ShowKeySystem(config, callback)
         local letterLabel = Create("TextLabel", {
             Text = letter,
             Font = Enum.Font.GothamBold,
-            TextSize = 22,
+            TextSize = 20,
             TextColor3 = Color3.fromRGB(230, 230, 230),
             BackgroundTransparency = 1,
-            Size = UDim2.new(0, letter == " " and 10 or 26, 0, 40),
-            Position = UDim2.new(0.5, -((#letters * 26) / 2) + totalWidth, 0, 5),
+            Size = UDim2.new(0, letter == " " and 10 or 24, 0, 40),
+            Position = UDim2.new(0.5, -((#letters * 24)/2) + totalWidth, 0, 10),
             Parent = titleContainer
         })
         
         if letter == " " then
             totalWidth = totalWidth + 10
         else
-            totalWidth = totalWidth + 26
+            totalWidth = totalWidth + 24
         end
         table.insert(letterLabels, letterLabel)
     end
     
+    -- Animate key window title
     for i, letterLabel in ipairs(letterLabels) do
         letterLabel.TextTransparency = 1
         task.wait(0.05)
@@ -200,45 +201,7 @@ local function ShowKeySystem(config, callback)
         }):Play()
     end
     
-    local yOffset = 65
-    
-    -- Thumbnail
-    if config.Thumbnail and config.Thumbnail.Image then
-        local ThumbnailFrame = Create("Frame", {
-            Size = UDim2.new(0, 70, 0, 70),
-            Position = UDim2.new(0.5, -35, 0, yOffset),
-            BackgroundColor3 = Color3.fromRGB(20, 20, 20),
-            Parent = KeyWindow
-        }, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
-        
-        Create("ImageLabel", {
-            Size = UDim2.new(1, -4, 1, -4),
-            Position = UDim2.fromOffset(2, 2),
-            BackgroundTransparency = 1,
-            Image = config.Thumbnail.Image,
-            Parent = ThumbnailFrame
-        }, { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) })
-        
-        if config.Thumbnail.Title then
-            Create("TextLabel", {
-                Text = config.Thumbnail.Title,
-                Font = Enum.Font.GothamBold,
-                TextSize = 12,
-                TextColor3 = Color3.fromRGB(230, 230, 230),
-                BackgroundTransparency = 1,
-                Position = UDim2.new(0.5, -100, 0, yOffset + 75),
-                Size = UDim2.new(0, 200, 0, 20),
-                Parent = KeyWindow
-            })
-            yOffset = yOffset + 105
-        else
-            yOffset = yOffset + 80
-        end
-    else
-        yOffset = 70
-    end
-    
-    -- Note
+    -- Note text
     if config.Note then
         Create("TextLabel", {
             Text = config.Note,
@@ -246,21 +209,20 @@ local function ShowKeySystem(config, callback)
             TextSize = 11,
             TextColor3 = Color3.fromRGB(150, 150, 150),
             BackgroundTransparency = 1,
-            Position = UDim2.new(0, 20, 0, yOffset),
-            Size = UDim2.new(1, -40, 0, 40),
+            Position = UDim2.new(0, 20, 0, 55),
+            Size = UDim2.new(1, -40, 0, 30),
             TextWrapped = true,
             Parent = KeyWindow
         })
-        yOffset = yOffset + 45
     end
     
-    -- Key Input
+    -- Key input box
     local KeyBox = Create("Frame", {
-        Size = UDim2.new(0.85, 0, 0, 40),
-        Position = UDim2.new(0.5, -170, 0, yOffset),
+        Size = UDim2.new(0.85, 0, 0, 45),
+        Position = UDim2.new(0.5, -170, 0, 100),
         BackgroundColor3 = Color3.fromRGB(20, 20, 20),
         Parent = KeyWindow
-    }, { Create("UICorner", { CornerRadius = UDim.new(0, 8) }) })
+    }, {Create("UICorner", {CornerRadius = UDim.new(0, 8)})})
     
     local KeyInput = Create("TextBox", {
         Size = UDim2.new(1, -20, 1, 0),
@@ -276,75 +238,89 @@ local function ShowKeySystem(config, callback)
         Parent = KeyBox
     })
     
-    -- Load saved key
-    if config.SaveKey and getgenv and getgenv().SavedKey then
-        KeyInput.Text = getgenv().SavedKey
-    end
-    
-    yOffset = yOffset + 50
-    
-    -- Buttons
-    local btnWidth = config.URL and 0.48 or 0.96
-    local btnSpacing = config.URL and 0.52 or 0
-    
-    local VerifyBtn = Create("TextButton", {
-        Size = UDim2.new(btnWidth, 0, 0, 35),
-        Position = UDim2.new(0.5, -170, 0, yOffset),
+    -- Submit button
+    local SubmitBtn = Create("TextButton", {
+        Size = UDim2.new(0.4, 0, 0, 40),
+        Position = UDim2.new(0.05, 0, 0, 165),
         BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-        Text = "VERIFY",
+        Text = "VERIFY KEY",
         Font = Enum.Font.GothamBold,
         TextSize = 12,
         TextColor3 = Color3.fromRGB(220, 220, 220),
         Parent = KeyWindow
-    }, { Create("UICorner", { CornerRadius = UDim.new(0, 6) }) })
-    ApplyPremiumBorder(VerifyBtn, 1.5)
+    }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
+    ApplyPremiumBorder(SubmitBtn, 1.5)
     
-    if config.URL then
-        local GetKeyBtn = Create("TextButton", {
-            Size = UDim2.new(0.48, 0, 0, 35),
-            Position = UDim2.new(0.5, -170 + 170 + 10, 0, yOffset),
-            BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-            Text = "GET KEY",
-            Font = Enum.Font.GothamBold,
-            TextSize = 12,
-            TextColor3 = Color3.fromRGB(220, 220, 220),
-            Parent = KeyWindow
-        }, { Create("UICorner", { CornerRadius = UDim.new(0, 6) }) })
-        ApplyPremiumBorder(GetKeyBtn, 1.5)
-        
-        GetKeyBtn.MouseButton1Click:Connect(function()
-            Clipboard:set(config.URL)
-            Library:Notify("URL Copied!", "Key URL copied to clipboard!", 3)
-        end)
-    end
+    -- Get Key button
+    local GetKeyBtn = Create("TextButton", {
+        Size = UDim2.new(0.4, 0, 0, 40),
+        Position = UDim2.new(0.55, 0, 0, 165),
+        BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+        Text = "GET KEY",
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextColor3 = Color3.fromRGB(220, 220, 220),
+        Parent = KeyWindow
+    }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
+    ApplyPremiumBorder(GetKeyBtn, 1.5)
     
-    yOffset = yOffset + 45
-    
-    -- Status
+    -- Status text
     local StatusText = Create("TextLabel", {
-        Text = "Enter your key to continue",
+        Text = "Waiting for key...",
         Font = Enum.Font.Gotham,
         TextSize = 10,
         TextColor3 = Color3.fromRGB(150, 150, 150),
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 0, yOffset),
+        Position = UDim2.new(0, 0, 0, 220),
         Size = UDim2.new(1, 0, 0, 30),
         Parent = KeyWindow
     })
+    
+    -- Get key URL function
+    local function OpenGetKeyURL()
+        if config.GetKeyURL then
+            local Animation = loadstring(game:HttpGet("https://raw.githubusercontent.com/Vraigos/Fluent-Modded/refs/heads/master/src/Components/AnimateGui.lua"))()
+            if Animation and Animation.AnimateGui then
+                Animation.AnimateGui(config.GetKeyURL)
+            else
+                -- Fallback: copy to clipboard
+                Library:Notify("Key Link", "Link copied to clipboard!", 3)
+                setclipboard(config.GetKeyURL)
+            end
+        else
+            Library:Notify("Error", "No key link provided!", 3)
+        end
+    end
     
     -- Verify function
     local function VerifyKey(key)
         StatusText.Text = "Verifying key..."
         StatusText.TextColor3 = Color3.fromRGB(255, 200, 100)
         
+        -- Check through APIs
         local verified = false
         
-        -- Check local keys
-        if config.Key and type(config.Key) == "table" then
-            for _, validKey in ipairs(config.Key) do
-                if key == validKey then
+        for _, api in ipairs(config.API or {}) do
+            if api.Type == "platoboost" and api.ServiceId and api.Secret then
+                local success, response = pcall(function()
+                    return HttpService:JSONDecode(game:HttpGet("https://api.platoboost.com/v1/verify/" .. api.ServiceId .. "/" .. key .. "?secret=" .. api.Secret))
+                end)
+                if success and response and response.valid then
                     verified = true
-                    break
+                end
+            elseif api.Type == "pandadevelopment" and api.ServiceId then
+                local success, response = pcall(function()
+                    return HttpService:JSONDecode(game:HttpGet("https://api.pandadevelopment.net/verify/" .. api.ServiceId .. "/" .. key))
+                end)
+                if success and response and response.success then
+                    verified = true
+                end
+            elseif api.Type == "luarmor" and api.ScriptId then
+                local success, response = pcall(function()
+                    return HttpService:JSONDecode(game:HttpGet("https://api.luarmor.net/v3/scripts/" .. api.ScriptId .. "/verify?key=" .. key))
+                end)
+                if success and response and response.valid then
+                    verified = true
                 end
             end
         end
@@ -352,11 +328,6 @@ local function ShowKeySystem(config, callback)
         if verified then
             StatusText.Text = "✓ Key verified successfully!"
             StatusText.TextColor3 = Color3.fromRGB(100, 255, 100)
-            
-            if config.SaveKey and getgenv then
-                getgenv().SavedKey = key
-            end
-            
             task.wait(1)
             screenGui:Destroy()
             if callback then callback(true) end
@@ -366,14 +337,18 @@ local function ShowKeySystem(config, callback)
         end
     end
     
-    VerifyBtn.MouseButton1Click:Connect(function()
+    SubmitBtn.MouseButton1Click:Connect(function()
         if KeyInput.Text ~= "" then
             VerifyKey(KeyInput.Text)
         else
             StatusText.Text = "Please enter a key!"
             StatusText.TextColor3 = Color3.fromRGB(255, 100, 100)
         end
-    end
+    end)
+    
+    GetKeyBtn.MouseButton1Click:Connect(function()
+        OpenGetKeyURL()
+    end)
     
     -- Enter key support
     UserInputService.InputBegan:Connect(function(input)
@@ -398,10 +373,10 @@ local function ShowKeySystem(config, callback)
         if callback then callback(false) end
     end)
     
-    -- Animate
+    -- Animate window popup
     KeyWindow.Size = UDim2.fromOffset(0, 0)
     TweenService:Create(KeyWindow, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = UDim2.fromOffset(420, 400)
+        Size = UDim2.fromOffset(420, 380)
     }):Play()
 end
 
@@ -412,6 +387,7 @@ function Library:CreateWindow(config)
     local Player = Players.LocalPlayer
     
     local titleText = config.Title or "PREMIUM UI"
+    local isTransparent = config.Transparent or false
     local windowCreated = false
     local screenGui = nil
     local MainFrame = nil
@@ -419,63 +395,84 @@ function Library:CreateWindow(config)
     local titleContainer = nil
     local letterLabels = nil
     
-    local function CreateMainUI()
+    -- Background color based on transparency setting
+    local bgColor = isTransparent and Color3.fromRGB(8, 8, 8) or Color3.fromRGB(8, 8, 8)
+    local sideBgColor = isTransparent and Color3.fromRGB(12, 12, 12) or Color3.fromRGB(12, 12, 12)
+    local bgTransparency = isTransparent and 0.15 or 0
+    local sideTransparency = isTransparent and 0.1 or 0
+    
+    -- Check if key system is enabled
+    if config.KeySystem and config.KeySystem.API then
+        ShowKeySystem(config.KeySystem, function(verified)
+            if verified then
+                CreateMainUI()
+            else
+                Library:Notify("Access Denied", "Key verification failed!", 3)
+            end
+        end)
+    else
+        CreateMainUI()
+    end
+    
+    function CreateMainUI()
         if windowCreated then return end
         windowCreated = true
         
         screenGui = Create("ScreenGui", {
             Name = "PremiumSilverUI",
             ResetOnSpawn = false,
-            Parent = game:GetService("CoreGui") or Player:WaitForChild("PlayerGui")
+            Parent = (game:GetService("CoreGui") or Player:WaitForChild("PlayerGui"))
         })
-        
+    
         OpenButton = Create("ImageButton", {
             Size = UDim2.fromOffset(40, 40),
             Position = UDim2.new(0, 15, 0.5, -20),
             BackgroundColor3 = Color3.fromRGB(10, 10, 10),
             Image = "rbxassetid://74666642456643",
             Parent = screenGui
-        }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+        }, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
         ApplyPremiumBorder(OpenButton, 2)
-        
+    
         MainFrame = Create("Frame", {
             Name = "MainFrame",
             Size = UDim2.fromOffset(420, 280),
             Position = UDim2.fromScale(0.5, 0.5),
             AnchorPoint = Vector2.new(0.5, 0.5),
-            BackgroundColor3 = Color3.fromRGB(8, 8, 8),
+            BackgroundColor3 = bgColor,
+            BackgroundTransparency = bgTransparency,
             Visible = true,
             Parent = screenGui
-        }, { Create("UICorner", { CornerRadius = UDim.new(0, 10) }) })
+        }, {Create("UICorner", {CornerRadius = UDim.new(0, 10)})})
         ApplyPremiumBorder(MainFrame, 2.8)
-        
+    
         -- Draggable
         do
             local dragging, dragStart, startPos
-            MainFrame.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            MainFrame.InputBegan:Connect(function(input) 
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then 
                     dragging = true
                     dragStart = input.Position
                     startPos = MainFrame.Position
-                end
+                end 
             end)
-            UIS.InputChanged:Connect(function(input)
-                if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            UIS.InputChanged:Connect(function(input) 
+                if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then 
                     local delta = input.Position - dragStart
                     MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-                end
+                end 
             end)
-            UIS.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                    dragging = false
-                end
+            UIS.InputEnded:Connect(function(input) 
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then 
+                    dragging = false 
+                end 
             end)
         end
-        
+    
         OpenButton.MouseButton1Click:Connect(function()
             MainFrame.Visible = not MainFrame.Visible
-            if MainFrame.Visible then
+            if MainFrame.Visible then 
                 MainFrame:TweenSize(UDim2.fromOffset(420, 280), "Out", "Back", 0.4, true)
+                -- Re-animate title when window opens
                 if titleContainer and letterLabels then
                     for _, letterLabel in ipairs(letterLabels) do
                         letterLabel.TextTransparency = 1
@@ -489,15 +486,17 @@ function Library:CreateWindow(config)
                 end
             end
         end)
-        
+    
         local TopBar = Create("Frame", {
             Size = UDim2.new(1, 0, 0, 35),
             BackgroundTransparency = 1,
             Parent = MainFrame
         })
         
+        -- Create animated title with letter-by-letter display
         titleContainer, letterLabels = CreateAnimatedTitle(TopBar, titleText, UDim2.fromOffset(12, 0), UDim2.new(1, -60, 1, 0), 14)
         
+        -- Add author text if provided
         if config.Author then
             Create("TextLabel", {
                 Text = config.Author,
@@ -519,34 +518,37 @@ function Library:CreateWindow(config)
             ImageColor3 = Color3.fromRGB(200, 200, 200),
             Parent = TopBar
         })
-        CloseBtn.MouseButton1Click:Connect(function()
-            MainFrame:TweenSize(UDim2.fromOffset(0, 0), "In", "Back", 0.3, true, function()
-                MainFrame.Visible = false
-            end)
+        CloseBtn.MouseButton1Click:Connect(function() 
+            MainFrame:TweenSize(UDim2.fromOffset(0, 0), "In", "Back", 0.3, true, function() 
+                MainFrame.Visible = false 
+            end) 
         end)
-        
+    
+        -- Sidebar with Padding
         local Sidebar = Create("Frame", {
             Size = UDim2.new(0, 110, 1, -55),
             Position = UDim2.fromOffset(10, 45),
-            BackgroundColor3 = Color3.fromRGB(12, 12, 12),
+            BackgroundColor3 = sideBgColor,
+            BackgroundTransparency = sideTransparency,
             Parent = MainFrame
         }, {
-            Create("UICorner", { CornerRadius = UDim.new(0, 8) }),
-            Create("UIListLayout", { Padding = UDim.new(0, 6), HorizontalAlignment = "Center" }),
-            Create("UIPadding", { PaddingTop = UDim.new(0, 8) })
+            Create("UICorner", {CornerRadius = UDim.new(0, 8)}),
+            Create("UIListLayout", {Padding = UDim.new(0, 6), HorizontalAlignment = "Center"}),
+            Create("UIPadding", {PaddingTop = UDim.new(0, 8)})
         })
         ApplyPremiumBorder(Sidebar, 1.2)
-        
+    
+        -- Container with Padding
         local Container = Create("Frame", {
             Size = UDim2.new(1, -140, 1, -55),
             Position = UDim2.fromOffset(130, 45),
             BackgroundTransparency = 1,
             Parent = MainFrame
         })
-        
+    
         local Window = {}
         local firstTab = true
-        
+    
         function Window:CreateTab(name)
             local TabBtn = Create("TextButton", {
                 Size = UDim2.new(0.85, 0, 0, 30),
@@ -556,7 +558,7 @@ function Library:CreateWindow(config)
                 Font = Enum.Font.GothamBold,
                 TextSize = 11,
                 Parent = Sidebar
-            }, { Create("UICorner", { CornerRadius = UDim.new(0, 5) }) })
+            }, {Create("UICorner", {CornerRadius = UDim.new(0, 5)})})
             
             local Page = Create("ScrollingFrame", {
                 Size = UDim2.fromScale(1, 1),
@@ -565,26 +567,26 @@ function Library:CreateWindow(config)
                 ScrollBarThickness = 0,
                 Parent = Container
             }, {
-                Create("UIListLayout", { Padding = UDim.new(0, 8), HorizontalAlignment = "Center" }),
-                Create("UIPadding", { PaddingTop = UDim.new(0, 2) })
+                Create("UIListLayout", {Padding = UDim.new(0, 8), HorizontalAlignment = "Center"}),
+                Create("UIPadding", {PaddingTop = UDim.new(0, 2)})
             })
-            
+    
             TabBtn.MouseButton1Click:Connect(function()
-                for _, v in pairs(Sidebar:GetChildren()) do
-                    if v:IsA("TextButton") then
-                        TweenService:Create(v, TweenInfo.new(0.3), { BackgroundColor3 = Color3.fromRGB(20, 20, 20), TextColor3 = Color3.fromRGB(200, 200, 200) }):Play()
-                    end
+                for _, v in pairs(Sidebar:GetChildren()) do 
+                    if v:IsA("TextButton") then 
+                        TweenService:Create(v, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(20, 20, 20), TextColor3 = Color3.fromRGB(200, 200, 200)}):Play() 
+                    end 
                 end
-                for _, v in pairs(Container:GetChildren()) do
-                    v.Visible = false
+                for _, v in pairs(Container:GetChildren()) do 
+                    v.Visible = false 
                 end
-                TweenService:Create(TabBtn, TweenInfo.new(0.3), { BackgroundColor3 = Color3.fromRGB(220, 220, 220), TextColor3 = Color3.fromRGB(20, 20, 20) }):Play()
+                TweenService:Create(TabBtn, TweenInfo.new(0.3), {BackgroundColor3 = Color3.fromRGB(220, 220, 220), TextColor3 = Color3.fromRGB(20, 20, 20)}):Play()
                 Page.Visible = true
             end)
-            
+    
             firstTab = false
             local Tab = {}
-            
+    
             function Tab:CreateButton(text, callback)
                 local Btn = Create("TextButton", {
                     Size = UDim2.new(0.96, 0, 0, 35),
@@ -594,22 +596,22 @@ function Library:CreateWindow(config)
                     Font = Enum.Font.GothamMedium,
                     TextSize = 11,
                     Parent = Page
-                }, { Create("UICorner", { CornerRadius = UDim.new(0, 6) }) })
+                }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
                 ApplyPremiumBorder(Btn, 1)
-                Btn.MouseButton1Click:Connect(function()
-                    if callback then callback() end
-                    Btn:TweenSize(UDim2.new(0.9, 0, 0, 32), "Out", "Quad", 0.1, true, function()
-                        Btn:TweenSize(UDim2.new(0.96, 0, 0, 35), "Out", "Quad", 0.1, true)
-                    end)
+                Btn.MouseButton1Click:Connect(function() 
+                    if callback then callback() end 
+                    Btn:TweenSize(UDim2.new(0.9, 0, 0, 32), "Out", "Quad", 0.1, true, function() 
+                        Btn:TweenSize(UDim2.new(0.96, 0, 0, 35), "Out", "Quad", 0.1, true) 
+                    end) 
                 end)
             end
-            
+    
             function Tab:CreateToggle(text, callback)
                 local TglFrame = Create("Frame", {
                     Size = UDim2.new(0.96, 0, 0, 35),
                     BackgroundColor3 = Color3.fromRGB(18, 18, 18),
                     Parent = Page
-                }, { Create("UICorner", { CornerRadius = UDim.new(0, 6) }) })
+                }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
                 ApplyPremiumBorder(TglFrame, 1)
                 
                 Create("TextLabel", {
@@ -630,32 +632,32 @@ function Library:CreateWindow(config)
                     BackgroundColor3 = Color3.fromRGB(35, 35, 35),
                     Text = "",
                     Parent = TglFrame
-                }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+                }, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
                 
                 local Circle = Create("Frame", {
                     Size = UDim2.fromOffset(14, 14),
                     Position = UDim2.fromOffset(2, 2),
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     Parent = TglBtn
-                }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+                }, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
                 
                 local toggled = false
-                TglBtn.MouseButton1Click:Connect(function()
+                TglBtn.MouseButton1Click:Connect(function() 
                     toggled = not toggled
                     local targetPos = toggled and UDim2.fromOffset(20, 2) or UDim2.fromOffset(2, 2)
                     local targetColor = toggled and Color3.fromRGB(200, 200, 200) or Color3.fromRGB(35, 35, 35)
-                    TweenService:Create(Circle, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Position = targetPos }):Play()
-                    TweenService:Create(TglBtn, TweenInfo.new(0.3), { BackgroundColor3 = targetColor }):Play()
-                    if callback then callback(toggled) end
+                    TweenService:Create(Circle, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = targetPos}):Play()
+                    TweenService:Create(TglBtn, TweenInfo.new(0.3), {BackgroundColor3 = targetColor}):Play()
+                    if callback then callback(toggled) end 
                 end)
             end
-            
+    
             function Tab:CreateSlider(text, min, max, default, callback)
                 local SliderFrame = Create("Frame", {
                     Size = UDim2.new(0.96, 0, 0, 55),
                     BackgroundColor3 = Color3.fromRGB(18, 18, 18),
                     Parent = Page
-                }, { Create("UICorner", { CornerRadius = UDim.new(0, 6) }) })
+                }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
                 ApplyPremiumBorder(SliderFrame, 1)
                 
                 Create("TextLabel", {
@@ -686,13 +688,13 @@ function Library:CreateWindow(config)
                     Position = UDim2.new(0.05, 0, 0.7, 0),
                     BackgroundColor3 = Color3.fromRGB(40, 40, 40),
                     Parent = SliderFrame
-                }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+                }, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
                 
                 local Fill = Create("Frame", {
                     Size = UDim2.new((default - min) / (max - min), 0, 1, 0),
                     BackgroundColor3 = Color3.fromRGB(200, 200, 200),
                     Parent = SliderBar
-                }, { Create("UICorner", { CornerRadius = UDim.new(1, 0) }) })
+                }, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
                 
                 local value = default
                 local dragging = false
@@ -724,23 +726,11 @@ function Library:CreateWindow(config)
                     end
                 end)
             end
-            
+    
             return Tab
         end
-        
-        return Window
-    end
     
-    if config.KeySystem then
-        ShowKeySystem(config.KeySystem, function(verified)
-            if verified then
-                CreateMainUI()
-            else
-                Library:Notify("Access Denied", "Key verification failed!", 3)
-            end
-        end)
-    else
-        return CreateMainUI()
+        return Window
     end
 end
 
