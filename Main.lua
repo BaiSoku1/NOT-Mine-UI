@@ -1,7 +1,7 @@
 --[[ 
-    PREMIUM MODERN SILVER UI (V12) - WITH KEY SYSTEM & ANIMATED TITLE
+    PREMIUM MODERN SILVER UI (V12) - WITH OPTIONAL KEY SYSTEM & ANIMATED TITLE
     - Style: Compact & Refined
-    - Features: URL Loader, Animated Title (letter by letter), Key System, Get Key Button, Transparency, Skip Key Option
+    - Features: URL Loader, Animated Title (letter by letter), Optional Key System, Get Key Button, Transparency
     - Usage: loadstring(game:HttpGet("YOUR_URL_HERE"))()
 ]]
 
@@ -147,7 +147,7 @@ local function ShowKeySystem(config, callback)
     
     -- Key window
     local KeyWindow = Create("Frame", {
-        Size = UDim2.fromOffset(420, 420),
+        Size = UDim2.fromOffset(420, 380),
         Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = Color3.fromRGB(8, 8, 8),
@@ -238,18 +238,18 @@ local function ShowKeySystem(config, callback)
         Parent = KeyBox
     })
     
-    -- Verify button
-    local VerifyBtn = Create("TextButton", {
+    -- Submit button
+    local SubmitBtn = Create("TextButton", {
         Size = UDim2.new(0.4, 0, 0, 40),
         Position = UDim2.new(0.05, 0, 0, 165),
         BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-        Text = "VERIFY",
+        Text = "VERIFY KEY",
         Font = Enum.Font.GothamBold,
         TextSize = 12,
         TextColor3 = Color3.fromRGB(220, 220, 220),
         Parent = KeyWindow
     }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
-    ApplyPremiumBorder(VerifyBtn, 1.5)
+    ApplyPremiumBorder(SubmitBtn, 1.5)
     
     -- Get Key button
     local GetKeyBtn = Create("TextButton", {
@@ -264,27 +264,14 @@ local function ShowKeySystem(config, callback)
     }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
     ApplyPremiumBorder(GetKeyBtn, 1.5)
     
-    -- Use Without Key button
-    local SkipBtn = Create("TextButton", {
-        Size = UDim2.new(0.85, 0, 0, 40),
-        Position = UDim2.new(0.5, -170, 0, 225),
-        BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-        Text = "USE WITHOUT KEY",
-        Font = Enum.Font.GothamBold,
-        TextSize = 12,
-        TextColor3 = Color3.fromRGB(220, 220, 220),
-        Parent = KeyWindow
-    }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
-    ApplyPremiumBorder(SkipBtn, 1.5)
-    
     -- Status text
     local StatusText = Create("TextLabel", {
-        Text = "Enter your key or use without key",
+        Text = "Waiting for key...",
         Font = Enum.Font.Gotham,
         TextSize = 10,
         TextColor3 = Color3.fromRGB(150, 150, 150),
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 0, 285),
+        Position = UDim2.new(0, 0, 0, 220),
         Size = UDim2.new(1, 0, 0, 30),
         Parent = KeyWindow
     })
@@ -348,7 +335,7 @@ local function ShowKeySystem(config, callback)
         end
     end
     
-    VerifyBtn.MouseButton1Click:Connect(function()
+    SubmitBtn.MouseButton1Click:Connect(function()
         if KeyInput.Text ~= "" then
             VerifyKey(KeyInput.Text)
         else
@@ -359,14 +346,6 @@ local function ShowKeySystem(config, callback)
     
     GetKeyBtn.MouseButton1Click:Connect(function()
         OpenGetKeyURL()
-    end)
-    
-    SkipBtn.MouseButton1Click:Connect(function()
-        StatusText.Text = "✓ Using without key!"
-        StatusText.TextColor3 = Color3.fromRGB(100, 255, 100)
-        task.wait(0.5)
-        screenGui:Destroy()
-        if callback then callback(true) end
     end)
     
     -- Enter key support
@@ -395,7 +374,7 @@ local function ShowKeySystem(config, callback)
     -- Animate window popup
     KeyWindow.Size = UDim2.fromOffset(0, 0)
     TweenService:Create(KeyWindow, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = UDim2.fromOffset(420, 420)
+        Size = UDim2.fromOffset(420, 380)
     }):Play()
 end
 
@@ -420,8 +399,8 @@ function Library:CreateWindow(config)
     local bgTransparency = isTransparent and 0.15 or 0
     local sideTransparency = isTransparent and 0.1 or 0
     
-    -- Check if key system is enabled
-    if config.KeySystem and config.KeySystem.API then
+    -- Check if key system is enabled (only if config.KeySystem exists and has API)
+    if config.KeySystem and config.KeySystem.API and #config.KeySystem.API > 0 then
         ShowKeySystem(config.KeySystem, function(verified)
             if verified then
                 CreateMainUI()
@@ -430,6 +409,7 @@ function Library:CreateWindow(config)
             end
         end)
     else
+        -- No key system, langsung buat UI
         CreateMainUI()
     end
     
