@@ -394,7 +394,6 @@ function Library:CreateWindow(config)
     local letterLabels = nil
     local Sidebar = nil
     local Container = nil
-    local Tabs = {}
     
     -- Background color based on transparency setting
     local bgColor = isTransparent and Color3.fromRGB(8, 8, 8) or Color3.fromRGB(8, 8, 8)
@@ -437,14 +436,14 @@ function Library:CreateWindow(config)
     
         MainFrame = Create("Frame", {
             Name = "MainFrame",
-            Size = UDim2.fromOffset(420, 380),
+            Size = UDim2.fromOffset(450, 400),
             Position = UDim2.fromScale(0.5, 0.5),
             AnchorPoint = Vector2.new(0.5, 0.5),
             BackgroundColor3 = bgColor,
             BackgroundTransparency = bgTransparency,
             Visible = true,
             Parent = screenGui
-        }, {Create("UICorner", {CornerRadius = UDim.new(0, 10)})})
+        }, {Create("UICorner", {CornerRadius = UDim.new(0, 12)})})
         ApplyPremiumBorder(MainFrame, 2.8)
     
         -- Draggable
@@ -473,7 +472,7 @@ function Library:CreateWindow(config)
         OpenButton.MouseButton1Click:Connect(function()
             MainFrame.Visible = not MainFrame.Visible
             if MainFrame.Visible then 
-                MainFrame:TweenSize(UDim2.fromOffset(420, 380), "Out", "Back", 0.4, true)
+                MainFrame:TweenSize(UDim2.fromOffset(450, 400), "Out", "Back", 0.4, true)
                 -- Re-animate title when window opens
                 if titleContainer and letterLabels then
                     for _, letterLabel in ipairs(letterLabels) do
@@ -489,16 +488,17 @@ function Library:CreateWindow(config)
             end
         end)
     
+        -- Top Bar
         local TopBar = Create("Frame", {
-            Size = UDim2.new(1, 0, 0, 45),
+            Size = UDim2.new(1, 0, 0, 50),
             BackgroundTransparency = 1,
             Parent = MainFrame
         })
         
-        -- Create animated title with letter-by-letter display
-        titleContainer, letterLabels = CreateAnimatedTitle(TopBar, titleText, UDim2.fromOffset(12, 10), UDim2.new(1, -60, 1, 0), 16)
+        -- Create animated title
+        titleContainer, letterLabels = CreateAnimatedTitle(TopBar, titleText, UDim2.fromOffset(15, 12), UDim2.new(1, -80, 1, 0), 16)
         
-        -- Add author text if provided
+        -- Add author text
         if config.Author then
             Create("TextLabel", {
                 Text = config.Author,
@@ -506,15 +506,16 @@ function Library:CreateWindow(config)
                 TextSize = 9,
                 TextColor3 = Color3.fromRGB(150, 150, 150),
                 BackgroundTransparency = 1,
-                Position = UDim2.new(1, -100, 0, 30),
+                Position = UDim2.new(1, -100, 0, 32),
                 Size = UDim2.new(0, 100, 0, 12),
                 Parent = TopBar
             })
         end
         
+        -- Close button
         local CloseBtn = Create("ImageButton", {
-            Size = UDim2.fromOffset(24, 24),
-            Position = UDim2.new(1, -35, 0, 10),
+            Size = UDim2.fromOffset(26, 26),
+            Position = UDim2.new(1, -40, 0, 12),
             BackgroundTransparency = 1,
             Image = "rbxassetid://74666642456643",
             ImageColor3 = Color3.fromRGB(200, 200, 200),
@@ -526,37 +527,29 @@ function Library:CreateWindow(config)
             end) 
         end)
         
-        -- Line separator
+        -- Separator line
         Create("Frame", {
             Size = UDim2.new(1, -20, 0, 1),
-            Position = UDim2.new(0, 10, 0, 44),
+            Position = UDim2.new(0, 10, 0, 49),
             BackgroundColor3 = Color3.fromRGB(40, 40, 40),
             BorderSizePixel = 0,
             Parent = MainFrame
         })
     
-        -- Sidebar with Padding
+        -- Sidebar
         Sidebar = Create("Frame", {
-            Size = UDim2.new(0, 120, 1, -55),
-            Position = UDim2.fromOffset(10, 55),
+            Size = UDim2.new(0, 130, 1, -65),
+            Position = UDim2.fromOffset(10, 60),
             BackgroundColor3 = sideBgColor,
             BackgroundTransparency = sideTransparency,
             Parent = MainFrame
         }, {
-            Create("UICorner", {CornerRadius = UDim.new(0, 8)}),
-            Create("UIPadding", {PaddingTop = UDim.new(0, 10), PaddingLeft = UDim.new(0, 5), PaddingRight = UDim.new(0, 5)})
+            Create("UICorner", {CornerRadius = UDim.new(0, 10)}),
+            Create("UIPadding", {PaddingTop = UDim.new(0, 12), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8)})
         })
         ApplyPremiumBorder(Sidebar, 1.2)
-    
-        -- Container with Padding
-        Container = Create("Frame", {
-            Size = UDim2.new(1, -145, 1, -65),
-            Position = UDim2.fromOffset(135, 55),
-            BackgroundTransparency = 1,
-            Parent = MainFrame
-        })
         
-        -- UIListLayout for sidebar buttons
+        -- Sidebar buttons layout
         local SidebarLayout = Create("UIListLayout", {
             Padding = UDim.new(0, 8),
             HorizontalAlignment = Enum.HorizontalAlignment.Center,
@@ -564,22 +557,32 @@ function Library:CreateWindow(config)
             Parent = Sidebar
         })
     
+        -- Container for pages
+        Container = Create("Frame", {
+            Size = UDim2.new(1, -155, 1, -70),
+            Position = UDim2.fromOffset(150, 60),
+            BackgroundTransparency = 1,
+            Parent = MainFrame
+        })
+    
         local Window = {}
         local firstTab = true
-        local currentPage = nil
+        local tabs = {}
     
         function Window:CreateTab(name)
+            -- Create tab button
             local TabBtn = Create("TextButton", {
-                Size = UDim2.new(0.9, 0, 0, 35),
+                Size = UDim2.new(0.95, 0, 0, 38),
                 BackgroundColor3 = firstTab and Color3.fromRGB(220, 220, 220) or Color3.fromRGB(25, 25, 25),
                 Text = name,
                 TextColor3 = firstTab and Color3.fromRGB(20, 20, 20) or Color3.fromRGB(200, 200, 200),
                 Font = Enum.Font.GothamBold,
-                TextSize = 12,
+                TextSize = 13,
                 BackgroundTransparency = 0,
                 Parent = Sidebar
-            }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
+            }, {Create("UICorner", {CornerRadius = UDim.new(0, 8)})})
             
+            -- Create page
             local Page = Create("ScrollingFrame", {
                 Size = UDim2.fromScale(1, 1),
                 BackgroundTransparency = 1,
@@ -589,14 +592,18 @@ function Library:CreateWindow(config)
                 CanvasSize = UDim2.new(0, 0, 0, 0),
                 Parent = Container
             }, {
-                Create("UIListLayout", {Padding = UDim.new(0, 10), HorizontalAlignment = Enum.HorizontalAlignment.Center}),
-                Create("UIPadding", {PaddingTop = UDim.new(0, 5), PaddingBottom = UDim.new(0, 10)})
+                Create("UIListLayout", {
+                    Padding = UDim.new(0, 12),
+                    HorizontalAlignment = Enum.HorizontalAlignment.Center,
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                }),
+                Create("UIPadding", {PaddingTop = UDim.new(0, 8), PaddingBottom = UDim.new(0, 8)})
             })
             
-            if firstTab then
-                currentPage = Page
-            end
+            -- Store page reference
+            tabs[name] = Page
             
+            -- Button click handler
             TabBtn.MouseButton1Click:Connect(function()
                 -- Update all sidebar buttons
                 for _, v in pairs(Sidebar:GetChildren()) do 
@@ -608,14 +615,11 @@ function Library:CreateWindow(config)
                     end 
                 end
                 -- Hide all pages
-                for _, v in pairs(Container:GetChildren()) do 
-                    if v:IsA("ScrollingFrame") then
-                        v.Visible = false 
-                    end
+                for _, page in pairs(tabs) do
+                    page.Visible = false
                 end
                 -- Show current page
                 Page.Visible = true
-                currentPage = Page
                 -- Update button style
                 TweenService:Create(TabBtn, TweenInfo.new(0.2), {
                     BackgroundColor3 = Color3.fromRGB(220, 220, 220), 
@@ -624,46 +628,48 @@ function Library:CreateWindow(config)
             end)
     
             firstTab = false
+            
             local Tab = {}
             
-            -- Function to update canvas size
+            -- Update canvas size function
             local function UpdateCanvasSize()
+                task.wait(0.05)
                 local layout = Page:FindFirstChildOfClass("UIListLayout")
                 if layout then
-                    task.wait(0.05)
                     local totalHeight = 0
                     for _, child in pairs(Page:GetChildren()) do
                         if child:IsA("TextButton") or child:IsA("Frame") then
-                            totalHeight = totalHeight + child.AbsoluteSize.Y + 10
+                            totalHeight = totalHeight + child.AbsoluteSize.Y + 12
                         end
                     end
-                    Page.CanvasSize = UDim2.new(0, 0, 0, totalHeight + 10)
+                    Page.CanvasSize = UDim2.new(0, 0, 0, totalHeight + 20)
                 end
             end
     
             function Tab:CreateButton(text, callback)
                 local Btn = Create("TextButton", {
-                    Size = UDim2.new(0.95, 0, 0, 40),
+                    Size = UDim2.new(0.96, 0, 0, 42),
                     BackgroundColor3 = Color3.fromRGB(20, 20, 20),
                     Text = text,
                     TextColor3 = Color3.fromRGB(230, 230, 230),
                     Font = Enum.Font.GothamMedium,
-                    TextSize = 12,
+                    TextSize = 13,
                     Parent = Page
                 }, {Create("UICorner", {CornerRadius = UDim.new(0, 8)})})
                 ApplyPremiumBorder(Btn, 1)
                 Btn.MouseButton1Click:Connect(function() 
                     if callback then callback() end 
-                    Btn:TweenSize(UDim2.new(0.93, 0, 0, 38), "Out", "Quad", 0.1, true, function() 
-                        Btn:TweenSize(UDim2.new(0.95, 0, 0, 40), "Out", "Quad", 0.1, true) 
+                    Btn:TweenSize(UDim2.new(0.94, 0, 0, 40), "Out", "Quad", 0.08, true, function() 
+                        Btn:TweenSize(UDim2.new(0.96, 0, 0, 42), "Out", "Quad", 0.08, true) 
                     end) 
                 end)
                 UpdateCanvasSize()
+                return Btn
             end
     
             function Tab:CreateToggle(text, callback)
                 local TglFrame = Create("Frame", {
-                    Size = UDim2.new(0.95, 0, 0, 45),
+                    Size = UDim2.new(0.96, 0, 0, 48),
                     BackgroundColor3 = Color3.fromRGB(20, 20, 20),
                     Parent = Page
                 }, {Create("UICorner", {CornerRadius = UDim.new(0, 8)})})
@@ -672,25 +678,25 @@ function Library:CreateWindow(config)
                 Create("TextLabel", {
                     Text = text,
                     Font = Enum.Font.GothamMedium,
-                    TextSize = 12,
+                    TextSize = 13,
                     TextColor3 = Color3.fromRGB(200, 200, 200),
                     TextXAlignment = "Left",
                     BackgroundTransparency = 1,
                     Position = UDim2.fromOffset(12, 0),
-                    Size = UDim2.new(1, -70, 1, 0),
+                    Size = UDim2.new(1, -80, 1, 0),
                     Parent = TglFrame
                 })
                 
                 local TglBtn = Create("TextButton", {
-                    Size = UDim2.fromOffset(44, 22),
-                    Position = UDim2.new(1, -56, 0.5, -11),
+                    Size = UDim2.fromOffset(48, 24),
+                    Position = UDim2.new(1, -60, 0.5, -12),
                     BackgroundColor3 = Color3.fromRGB(40, 40, 40),
                     Text = "",
                     Parent = TglFrame
                 }, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
                 
                 local Circle = Create("Frame", {
-                    Size = UDim2.fromOffset(18, 18),
+                    Size = UDim2.fromOffset(20, 20),
                     Position = UDim2.fromOffset(2, 2),
                     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                     Parent = TglBtn
@@ -699,7 +705,7 @@ function Library:CreateWindow(config)
                 local toggled = false
                 TglBtn.MouseButton1Click:Connect(function() 
                     toggled = not toggled
-                    local targetPos = toggled and UDim2.fromOffset(24, 2) or UDim2.fromOffset(2, 2)
+                    local targetPos = toggled and UDim2.fromOffset(26, 2) or UDim2.fromOffset(2, 2)
                     local targetColor = toggled and Color3.fromRGB(200, 200, 200) or Color3.fromRGB(40, 40, 40)
                     TweenService:Create(Circle, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = targetPos}):Play()
                     TweenService:Create(TglBtn, TweenInfo.new(0.2), {BackgroundColor3 = targetColor}):Play()
@@ -710,7 +716,7 @@ function Library:CreateWindow(config)
     
             function Tab:CreateSlider(text, min, max, default, callback)
                 local SliderFrame = Create("Frame", {
-                    Size = UDim2.new(0.95, 0, 0, 70),
+                    Size = UDim2.new(0.96, 0, 0, 75),
                     BackgroundColor3 = Color3.fromRGB(20, 20, 20),
                     Parent = Page
                 }, {Create("UICorner", {CornerRadius = UDim.new(0, 8)})})
@@ -719,28 +725,28 @@ function Library:CreateWindow(config)
                 Create("TextLabel", {
                     Text = text,
                     Font = Enum.Font.GothamMedium,
-                    TextSize = 12,
+                    TextSize = 13,
                     TextColor3 = Color3.fromRGB(200, 200, 200),
                     TextXAlignment = "Left",
                     BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(12, 8),
-                    Size = UDim2.new(1, -20, 0, 20),
+                    Position = UDim2.fromOffset(12, 10),
+                    Size = UDim2.new(1, -20, 0, 22),
                     Parent = SliderFrame
                 })
                 
                 local ValueLabel = Create("TextLabel", {
                     Text = tostring(default),
                     Font = Enum.Font.GothamBold,
-                    TextSize = 12,
+                    TextSize = 13,
                     TextColor3 = Color3.fromRGB(220, 220, 220),
                     BackgroundTransparency = 1,
-                    Position = UDim2.new(1, -50, 0, 8),
-                    Size = UDim2.new(0, 45, 0, 20),
+                    Position = UDim2.new(1, -55, 0, 10),
+                    Size = UDim2.new(0, 50, 0, 22),
                     Parent = SliderFrame
                 })
                 
                 local SliderBar = Create("Frame", {
-                    Size = UDim2.new(0.9, 0, 0, 4),
+                    Size = UDim2.new(0.9, 0, 0, 5),
                     Position = UDim2.new(0.05, 0, 0.7, 0),
                     BackgroundColor3 = Color3.fromRGB(50, 50, 50),
                     Parent = SliderFrame
