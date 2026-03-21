@@ -1,7 +1,7 @@
 --[[ 
     PREMIUM MODERN SILVER UI (V12) - WITH KEY SYSTEM & ANIMATED TITLE
     - Style: Compact & Refined
-    - Features: URL Loader, Animated Title (letter by letter), Key System, Get Key Button, Transparency
+    - Features: URL Loader, Animated Title (letter by letter), Key System, Get Key Button, Transparency, Skip Key Option
     - Usage: loadstring(game:HttpGet("YOUR_URL_HERE"))()
 ]]
 
@@ -147,7 +147,7 @@ local function ShowKeySystem(config, callback)
     
     -- Key window
     local KeyWindow = Create("Frame", {
-        Size = UDim2.fromOffset(420, 380),
+        Size = UDim2.fromOffset(420, 420),
         Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = Color3.fromRGB(8, 8, 8),
@@ -238,18 +238,18 @@ local function ShowKeySystem(config, callback)
         Parent = KeyBox
     })
     
-    -- Submit button
-    local SubmitBtn = Create("TextButton", {
+    -- Verify button
+    local VerifyBtn = Create("TextButton", {
         Size = UDim2.new(0.4, 0, 0, 40),
         Position = UDim2.new(0.05, 0, 0, 165),
         BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-        Text = "VERIFY KEY",
+        Text = "VERIFY",
         Font = Enum.Font.GothamBold,
         TextSize = 12,
         TextColor3 = Color3.fromRGB(220, 220, 220),
         Parent = KeyWindow
     }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
-    ApplyPremiumBorder(SubmitBtn, 1.5)
+    ApplyPremiumBorder(VerifyBtn, 1.5)
     
     -- Get Key button
     local GetKeyBtn = Create("TextButton", {
@@ -264,14 +264,27 @@ local function ShowKeySystem(config, callback)
     }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
     ApplyPremiumBorder(GetKeyBtn, 1.5)
     
+    -- Use Without Key button
+    local SkipBtn = Create("TextButton", {
+        Size = UDim2.new(0.85, 0, 0, 40),
+        Position = UDim2.new(0.5, -170, 0, 225),
+        BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+        Text = "USE WITHOUT KEY",
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+        TextColor3 = Color3.fromRGB(220, 220, 220),
+        Parent = KeyWindow
+    }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
+    ApplyPremiumBorder(SkipBtn, 1.5)
+    
     -- Status text
     local StatusText = Create("TextLabel", {
-        Text = "Waiting for key...",
+        Text = "Enter your key or use without key",
         Font = Enum.Font.Gotham,
         TextSize = 10,
         TextColor3 = Color3.fromRGB(150, 150, 150),
         BackgroundTransparency = 1,
-        Position = UDim2.new(0, 0, 0, 220),
+        Position = UDim2.new(0, 0, 0, 285),
         Size = UDim2.new(1, 0, 0, 30),
         Parent = KeyWindow
     })
@@ -283,7 +296,6 @@ local function ShowKeySystem(config, callback)
             if Animation and Animation.AnimateGui then
                 Animation.AnimateGui(config.GetKeyURL)
             else
-                -- Fallback: copy to clipboard
                 Library:Notify("Key Link", "Link copied to clipboard!", 3)
                 setclipboard(config.GetKeyURL)
             end
@@ -297,7 +309,6 @@ local function ShowKeySystem(config, callback)
         StatusText.Text = "Verifying key..."
         StatusText.TextColor3 = Color3.fromRGB(255, 200, 100)
         
-        -- Check through APIs
         local verified = false
         
         for _, api in ipairs(config.API or {}) do
@@ -337,7 +348,7 @@ local function ShowKeySystem(config, callback)
         end
     end
     
-    SubmitBtn.MouseButton1Click:Connect(function()
+    VerifyBtn.MouseButton1Click:Connect(function()
         if KeyInput.Text ~= "" then
             VerifyKey(KeyInput.Text)
         else
@@ -348,6 +359,14 @@ local function ShowKeySystem(config, callback)
     
     GetKeyBtn.MouseButton1Click:Connect(function()
         OpenGetKeyURL()
+    end)
+    
+    SkipBtn.MouseButton1Click:Connect(function()
+        StatusText.Text = "✓ Using without key!"
+        StatusText.TextColor3 = Color3.fromRGB(100, 255, 100)
+        task.wait(0.5)
+        screenGui:Destroy()
+        if callback then callback(true) end
     end)
     
     -- Enter key support
@@ -376,7 +395,7 @@ local function ShowKeySystem(config, callback)
     -- Animate window popup
     KeyWindow.Size = UDim2.fromOffset(0, 0)
     TweenService:Create(KeyWindow, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = UDim2.fromOffset(420, 380)
+        Size = UDim2.fromOffset(420, 420)
     }):Play()
 end
 
