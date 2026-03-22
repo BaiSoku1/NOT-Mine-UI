@@ -1,5 +1,5 @@
 --[[ 
-    PREMIUM MODERN SILVER UI (V13) - COMPLETE EDITION
+    PREMIUM MODERN SILVER UI (V14) - COMPLETE EDITION
     - Style: Compact & Refined
     - Features: Key System, All UI Elements, Icons Support
     - Enhanced: Divider, Space, Dropdown (Multi), Slider (Float), Input (Textarea)
@@ -32,13 +32,10 @@ local function Create(class, props, children)
     return obj
 end
 
-local function ApplyPremiumBorder(parent, thickness)
-    local TweenService = game:GetService("TweenService")
-    local RunService = game:GetService("RunService")
-    
+local function ApplyPremiumBorder(parent, thickness, color)
     local stroke = Create("UIStroke", {
         Thickness = thickness or 2.2,
-        Color = Color3.fromRGB(255, 255, 255),
+        Color = color or Color3.fromRGB(255, 255, 255),
         ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
         Parent = parent
     }, {
@@ -51,31 +48,31 @@ local function ApplyPremiumBorder(parent, thickness)
             Rotation = 0
         })
     })
-
-    task.spawn(function()
-        local g = stroke:FindFirstChildOfClass("UIGradient")
-        while stroke and stroke.Parent do
-            g.Rotation = g.Rotation + 1.5
-            RunService.RenderStepped:Wait()
-        end
-    end)
     return stroke
 end
 
-function Library:Notify(title, content, duration, icon)
+-- Helper functions
+local function table_find(t, value)
+    for i, v in ipairs(t) do
+        if v == value then return i end
+    end
+    return nil
+end
+
+function Library:Notify(config)
     local Players = game:GetService("Players")
     local Player = Players.LocalPlayer
     local TweenService = game:GetService("TweenService")
     
-    local duration = duration or 5
+    local duration = config.Duration or 5
     local NotifGui = Player:WaitForChild("PlayerGui"):FindFirstChild("ModernNotifs") or Create("ScreenGui", {Name = "ModernNotifs", Parent = (game:GetService("CoreGui") or Player:WaitForChild("PlayerGui"))})
     local Holder = NotifGui:FindFirstChild("Holder") or Create("Frame", {Name = "Holder", Size = UDim2.new(0, 280, 1, -20), Position = UDim2.new(1, -290, 0, 10), BackgroundTransparency = 1, Parent = NotifGui}, {Create("UIListLayout", {VerticalAlignment = "Bottom", Padding = UDim.new(0, 8), HorizontalAlignment = "Right"})})
 
     local Notif = Create("Frame", {Size = UDim2.new(1, 0, 0, 70), BackgroundColor3 = Color3.fromRGB(10, 10, 10), Parent = Holder}, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
     ApplyPremiumBorder(Notif, 2)
 
-    if icon then
-        local iconImg = LoadIcon(icon, "lucide")
+    if config.Icon then
+        local iconImg = LoadIcon(config.Icon, "lucide")
         if iconImg then
             Create("ImageLabel", {
                 Size = UDim2.fromOffset(20, 20),
@@ -87,8 +84,8 @@ function Library:Notify(title, content, duration, icon)
         end
     end
 
-    Create("TextLabel", {Text = title:upper(), Font = Enum.Font.GothamBold, TextSize = 11, TextColor3 = Color3.fromRGB(255, 255, 255), TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(icon and 40 or 10, 8), Size = UDim2.new(1, -50, 0, 15), Parent = Notif})
-    Create("TextLabel", {Text = content, Font = Enum.Font.GothamMedium, TextSize = 10, TextColor3 = Color3.fromRGB(180, 180, 180), TextXAlignment = "Left", TextYAlignment = "Top", TextWrapped = true, BackgroundTransparency = 1, Position = UDim2.fromOffset(icon and 40 or 10, 25), Size = UDim2.new(1, -30, 0, 40), Parent = Notif})
+    Create("TextLabel", {Text = (config.Title or "Notification"):upper(), Font = Enum.Font.GothamBold, TextSize = 11, TextColor3 = Color3.fromRGB(255, 255, 255), TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(config.Icon and 40 or 10, 8), Size = UDim2.new(1, -50, 0, 15), Parent = Notif})
+    Create("TextLabel", {Text = config.Content or "", Font = Enum.Font.GothamMedium, TextSize = 10, TextColor3 = Color3.fromRGB(180, 180, 180), TextXAlignment = "Left", TextYAlignment = "Top", TextWrapped = true, BackgroundTransparency = 1, Position = UDim2.fromOffset(config.Icon and 40 or 10, 25), Size = UDim2.new(1, -30, 0, 40), Parent = Notif})
 
     Notif.Position = UDim2.new(1.5, 0, 0, 0)
     TweenService:Create(Notif, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0, 0, 0, 0)}):Play()
@@ -98,121 +95,6 @@ function Library:Notify(title, content, duration, icon)
     end)
 end
 
--- Create dialog/popup
-function Library:Dialog(config)
-    local Players = game:GetService("Players")
-    local Player = Players.LocalPlayer
-    local TweenService = game:GetService("TweenService")
-    
-    local dialogGui = Create("ScreenGui", {
-        Name = "DialogGUI",
-        Parent = game:GetService("CoreGui") or Player:WaitForChild("PlayerGui")
-    })
-    
-    local overlay = Create("Frame", {
-        Size = UDim2.fromScale(1, 1),
-        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-        BackgroundTransparency = 0.5,
-        Parent = dialogGui
-    })
-    
-    local dialogFrame = Create("Frame", {
-        Size = UDim2.fromOffset(300, 200),
-        Position = UDim2.fromScale(0.5, 0.5),
-        AnchorPoint = Vector2.new(0.5, 0.5),
-        BackgroundColor3 = Color3.fromRGB(8, 8, 8),
-        Parent = overlay
-    }, {
-        Create("UICorner", {CornerRadius = UDim.new(0, 10)})
-    })
-    ApplyPremiumBorder(dialogFrame, 2)
-    
-    Create("TextLabel", {
-        Text = config.Title or "Dialog",
-        Font = Enum.Font.GothamBold,
-        TextSize = 14,
-        TextColor3 = Color3.fromRGB(255, 255, 255),
-        Position = UDim2.fromOffset(15, 15),
-        Size = UDim2.new(1, -30, 0, 20),
-        BackgroundTransparency = 1,
-        Parent = dialogFrame
-    })
-    
-    Create("TextLabel", {
-        Text = config.Content or "",
-        Font = Enum.Font.GothamMedium,
-        TextSize = 12,
-        TextColor3 = Color3.fromRGB(180, 180, 180),
-        Position = UDim2.fromOffset(15, 45),
-        Size = UDim2.new(1, -30, 0, 80),
-        BackgroundTransparency = 1,
-        TextWrapped = true,
-        Parent = dialogFrame
-    })
-    
-    local inputBox = nil
-    if config.Input then
-        inputBox = Create("TextBox", {
-            Size = UDim2.new(0.9, 0, 0, 35),
-            Position = UDim2.fromOffset(15, 130),
-            BackgroundColor3 = Color3.fromRGB(20, 20, 20),
-            Text = "",
-            PlaceholderText = config.Placeholder or "Enter value...",
-            TextColor3 = Color3.fromRGB(200, 200, 200),
-            Font = Enum.Font.GothamMedium,
-            TextSize = 11,
-            Parent = dialogFrame
-        }, {
-            Create("UICorner", {CornerRadius = UDim.new(0, 5)})
-        })
-    end
-    
-    local buttonFrame = Create("Frame", {
-        Size = UDim2.new(1, -30, 0, 35),
-        Position = UDim2.fromOffset(15, config.Input and 175 or 140),
-        BackgroundTransparency = 1,
-        Parent = dialogFrame
-    })
-    
-    local confirmBtn = Create("TextButton", {
-        Size = UDim2.new(0.48, 0, 1, 0),
-        Position = UDim2.fromScale(0, 0),
-        BackgroundColor3 = Color3.fromRGB(200, 200, 200),
-        Text = "Confirm",
-        TextColor3 = Color3.fromRGB(20, 20, 20),
-        Font = Enum.Font.GothamBold,
-        TextSize = 11,
-        Parent = buttonFrame
-    }, {Create("UICorner", {CornerRadius = UDim.new(0, 5)})})
-    
-    local cancelBtn = Create("TextButton", {
-        Size = UDim2.new(0.48, 0, 1, 0),
-        Position = UDim2.fromScale(0.52, 0),
-        BackgroundColor3 = Color3.fromRGB(30, 30, 30),
-        Text = "Cancel",
-        TextColor3 = Color3.fromRGB(200, 200, 200),
-        Font = Enum.Font.GothamBold,
-        TextSize = 11,
-        Parent = buttonFrame
-    }, {Create("UICorner", {CornerRadius = UDim.new(0, 5)})})
-    
-    local result = nil
-    confirmBtn.MouseButton1Click:Connect(function()
-        result = inputBox and inputBox.Text or true
-        dialogGui:Destroy()
-        if config.Callback then config.Callback(result) end
-    end)
-    
-    cancelBtn.MouseButton1Click:Connect(function()
-        result = nil
-        dialogGui:Destroy()
-        if config.Callback then config.Callback(nil) end
-    end)
-    
-    return dialogFrame
-end
-
--- Create popup
 function Library:Popup(config)
     local Players = game:GetService("Players")
     local Player = Players.LocalPlayer
@@ -231,7 +113,7 @@ function Library:Popup(config)
     })
     
     local popupFrame = Create("Frame", {
-        Size = UDim2.fromOffset(250, 150),
+        Size = UDim2.fromOffset(300, 180),
         Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = Color3.fromRGB(8, 8, 8),
@@ -241,13 +123,26 @@ function Library:Popup(config)
     })
     ApplyPremiumBorder(popupFrame, 2)
     
+    if config.Icon then
+        local iconImg = LoadIcon(config.Icon, "lucide")
+        if iconImg then
+            Create("ImageLabel", {
+                Size = UDim2.fromOffset(24, 24),
+                Position = UDim2.fromOffset(15, 15),
+                BackgroundTransparency = 1,
+                Image = iconImg,
+                Parent = popupFrame
+            })
+        end
+    end
+    
     Create("TextLabel", {
         Text = config.Title or "Popup",
         Font = Enum.Font.GothamBold,
         TextSize = 14,
         TextColor3 = Color3.fromRGB(255, 255, 255),
-        Position = UDim2.fromOffset(15, 15),
-        Size = UDim2.new(1, -30, 0, 20),
+        Position = UDim2.fromOffset(config.Icon and 50 or 15, 15),
+        Size = UDim2.new(1, -60, 0, 20),
         BackgroundTransparency = 1,
         Parent = popupFrame
     })
@@ -257,172 +152,193 @@ function Library:Popup(config)
         Font = Enum.Font.GothamMedium,
         TextSize = 12,
         TextColor3 = Color3.fromRGB(180, 180, 180),
-        Position = UDim2.fromOffset(15, 45),
+        Position = UDim2.fromOffset(15, 50),
         Size = UDim2.new(1, -30, 0, 60),
         BackgroundTransparency = 1,
         TextWrapped = true,
         Parent = popupFrame
     })
     
-    local closeBtn = Create("TextButton", {
-        Size = UDim2.new(0.8, 0, 0, 30),
-        Position = UDim2.fromScale(0.1, 0.75),
-        BackgroundColor3 = Color3.fromRGB(200, 200, 200),
-        Text = "OK",
-        TextColor3 = Color3.fromRGB(20, 20, 20),
-        Font = Enum.Font.GothamBold,
-        TextSize = 11,
+    local buttonFrame = Create("Frame", {
+        Size = UDim2.new(1, -30, 0, 35),
+        Position = UDim2.fromOffset(15, 120),
+        BackgroundTransparency = 1,
         Parent = popupFrame
-    }, {Create("UICorner", {CornerRadius = UDim.new(0, 5)})})
+    })
     
-    closeBtn.MouseButton1Click:Connect(function()
-        popupGui:Destroy()
-        if config.Callback then config.Callback() end
-    end)
+    local buttons = config.Buttons or {{Title = "OK"}}
+    for i, btnConfig in ipairs(buttons) do
+        local btn = Create("TextButton", {
+            Size = UDim2.new(0.48, 0, 1, 0),
+            Position = UDim2.new((i-1) * 0.52, 0, 0, 0),
+            BackgroundColor3 = btnConfig.Variant == "Primary" and Color3.fromRGB(200, 200, 200) or Color3.fromRGB(30, 30, 30),
+            Text = btnConfig.Title,
+            TextColor3 = btnConfig.Variant == "Primary" and Color3.fromRGB(20, 20, 20) or Color3.fromRGB(200, 200, 200),
+            Font = Enum.Font.GothamBold,
+            TextSize = 11,
+            Parent = buttonFrame
+        }, {Create("UICorner", {CornerRadius = UDim.new(0, 5)})})
+        
+        if btnConfig.Icon then
+            local iconImg = LoadIcon(btnConfig.Icon, "lucide")
+            if iconImg then
+                Create("ImageLabel", {
+                    Size = UDim2.fromOffset(14, 14),
+                    Position = UDim2.fromOffset(8, 10),
+                    BackgroundTransparency = 1,
+                    Image = iconImg,
+                    Parent = btn
+                })
+            end
+        end
+        
+        btn.MouseButton1Click:Connect(function()
+            popupGui:Destroy()
+            if btnConfig.Callback then btnConfig.Callback() end
+        end)
+    end
     
     return popupFrame
 end
 
--- Create animated title
-local function CreateAnimatedTitle(parent, titleText, position, size, icon)
+function Library:Dialog(config)
+    local Players = game:GetService("Players")
+    local Player = Players.LocalPlayer
     local TweenService = game:GetService("TweenService")
     
-    local titleContainer = Create("Frame", {
-        Size = size,
-        Position = position,
-        BackgroundTransparency = 1,
-        Parent = parent
+    local dialogGui = Create("ScreenGui", {
+        Name = "DialogGUI",
+        Parent = game:GetService("CoreGui") or Player:WaitForChild("PlayerGui")
     })
     
-    if icon then
-        local iconLabel = Create("ImageLabel", {
-            Size = UDim2.fromOffset(16, 16),
-            Position = UDim2.fromOffset(0, 8),
-            BackgroundTransparency = 1,
-            Image = icon,
-            Parent = titleContainer
-        })
-    end
+    local overlay = Create("Frame", {
+        Size = UDim2.fromScale(1, 1),
+        BackgroundColor3 = Color3.fromRGB(0, 0, 0),
+        BackgroundTransparency = 0.5,
+        Parent = dialogGui
+    })
     
-    local letters = {}
-    for i = 1, #titleText do
-        local char = string.sub(titleText, i, i)
-        table.insert(letters, char)
-    end
-    
-    local letterLabels = {}
-    local totalWidth = icon and 22 or 0
-    
-    for i, letter in ipairs(letters) do
-        local letterLabel = Create("TextLabel", {
-            Text = letter,
-            Font = Enum.Font.GothamBold,
-            TextSize = 14,
-            TextColor3 = Color3.fromRGB(230, 230, 230),
-            BackgroundTransparency = 1,
-            Size = UDim2.new(0, letter == " " and 8 or 20, 1, 0),
-            Position = UDim2.new(0, totalWidth, 0, 0),
-            Parent = titleContainer
-        })
-        
-        if letter == " " then
-            totalWidth = totalWidth + 8
-        else
-            totalWidth = totalWidth + 20
-        end
-        
-        table.insert(letterLabels, letterLabel)
-    end
-    
-    for i, letterLabel in ipairs(letterLabels) do
-        letterLabel.TextTransparency = 1
-        task.wait(0.05)
-        TweenService:Create(letterLabel, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            TextTransparency = 0
-        }):Play()
-    end
-    
-    return titleContainer, letterLabels
-end
-
--- Create tag
-local function CreateTag(parent, text, tagType)
-    local colors = {
-        success = Color3.fromRGB(0, 200, 0),
-        error = Color3.fromRGB(200, 0, 0),
-        warning = Color3.fromRGB(200, 150, 0),
-        info = Color3.fromRGB(100, 100, 200),
-        default = Color3.fromRGB(150, 150, 150)
-    }
-    
-    local tagColor = colors[tagType] or colors.default
-    
-    local tag = Create("Frame", {
-        Size = UDim2.new(0, text:len() * 7 + 15, 0, 20),
-        BackgroundColor3 = Color3.fromRGB(20, 20, 20),
-        Parent = parent
+    local dialogFrame = Create("Frame", {
+        Size = UDim2.fromOffset(320, 220),
+        Position = UDim2.fromScale(0.5, 0.5),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundColor3 = Color3.fromRGB(8, 8, 8),
+        Parent = overlay
     }, {
-        Create("UICorner", {CornerRadius = UDim.new(0, 4)}),
-        Create("UIStroke", {
-            Thickness = 1,
-            Color = tagColor
-        })
+        Create("UICorner", {CornerRadius = UDim.new(0, 10)})
+    })
+    ApplyPremiumBorder(dialogFrame, 2)
+    
+    if config.Icon then
+        local iconImg = LoadIcon(config.Icon, "lucide")
+        if iconImg then
+            Create("ImageLabel", {
+                Size = UDim2.fromOffset(24, 24),
+                Position = UDim2.fromOffset(15, 15),
+                BackgroundTransparency = 1,
+                Image = iconImg,
+                Parent = dialogFrame
+            })
+        end
+    end
+    
+    Create("TextLabel", {
+        Text = config.Title or "Dialog",
+        Font = Enum.Font.GothamBold,
+        TextSize = 14,
+        TextColor3 = Color3.fromRGB(255, 255, 255),
+        Position = UDim2.fromOffset(config.Icon and 50 or 15, 15),
+        Size = UDim2.new(1, -60, 0, 20),
+        BackgroundTransparency = 1,
+        Parent = dialogFrame
     })
     
     Create("TextLabel", {
-        Text = text,
+        Text = config.Content or "",
         Font = Enum.Font.GothamMedium,
-        TextSize = 10,
-        TextColor3 = tagColor,
+        TextSize = 12,
+        TextColor3 = Color3.fromRGB(180, 180, 180),
+        Position = UDim2.fromOffset(15, 50),
+        Size = UDim2.new(1, -30, 0, 60),
         BackgroundTransparency = 1,
-        Size = UDim2.new(1, 0, 1, 0),
+        TextWrapped = true,
+        Parent = dialogFrame
+    })
+    
+    local buttonFrame = Create("Frame", {
+        Size = UDim2.new(1, -30, 0, 35),
+        Position = UDim2.fromOffset(15, 120),
+        BackgroundTransparency = 1,
+        Parent = dialogFrame
+    })
+    
+    local buttons = config.Buttons or {{Title = "Confirm"}, {Title = "Cancel"}}
+    for i, btnConfig in ipairs(buttons) do
+        local btn = Create("TextButton", {
+            Size = UDim2.new(0.48, 0, 1, 0),
+            Position = UDim2.new((i-1) * 0.52, 0, 0, 0),
+            BackgroundColor3 = btnConfig.Variant == "Primary" and Color3.fromRGB(200, 200, 200) or Color3.fromRGB(30, 30, 30),
+            Text = btnConfig.Title,
+            TextColor3 = btnConfig.Variant == "Primary" and Color3.fromRGB(20, 20, 20) or Color3.fromRGB(200, 200, 200),
+            Font = Enum.Font.GothamBold,
+            TextSize = 11,
+            Parent = buttonFrame
+        }, {Create("UICorner", {CornerRadius = UDim.new(0, 5)})})
+        
+        btn.MouseButton1Click:Connect(function()
+            dialogGui:Destroy()
+            if btnConfig.Callback then btnConfig.Callback() end
+        end)
+    end
+    
+    return dialogFrame
+end
+
+function Library:Tag(config)
+    local Players = game:GetService("Players")
+    local Player = Players.LocalPlayer
+    local screenGui = Player:WaitForChild("PlayerGui"):FindFirstChild("PremiumSilverUI") or Player:WaitForChild("PlayerGui"):FindFirstChild("PremiumSilverUI")
+    
+    if not screenGui then return end
+    
+    local tag = Create("Frame", {
+        Size = UDim2.new(0, config.Title:len() * 7 + (config.Icon and 25 or 15), 0, 25),
+        BackgroundColor3 = Color3.fromRGB(20, 20, 20),
+        Parent = screenGui:FindFirstChild("MainFrame") or screenGui
+    }, {
+        Create("UICorner", {CornerRadius = UDim.new(0, config.Radius or 4)}),
+        Create("UIStroke", {
+            Thickness = 1,
+            Color = config.Color or Color3.fromRGB(150, 150, 150)
+        })
+    })
+    
+    if config.Icon then
+        local iconImg = LoadIcon(config.Icon, "lucide")
+        if iconImg then
+            Create("ImageLabel", {
+                Size = UDim2.fromOffset(14, 14),
+                Position = UDim2.fromOffset(6, 5.5),
+                BackgroundTransparency = 1,
+                Image = iconImg,
+                ImageColor3 = config.Color or Color3.fromRGB(150, 150, 150),
+                Parent = tag
+            })
+        end
+    end
+    
+    Create("TextLabel", {
+        Text = config.Title,
+        Font = Enum.Font.GothamMedium,
+        TextSize = 11,
+        TextColor3 = config.Color or Color3.fromRGB(150, 150, 150),
+        BackgroundTransparency = 1,
+        Position = UDim2.fromOffset(config.Icon and 23 or 6, 4),
+        Size = UDim2.new(1, -30, 1, 0),
         Parent = tag
     })
     
     return tag
-end
-
--- Create divider (with line between elements)
-local function CreateDivider(parent, text)
-    local divider = Create("Frame", {
-        Size = UDim2.new(0.96, 0, 0, 30),
-        BackgroundTransparency = 1,
-        Parent = parent
-    })
-    
-    local line = Create("Frame", {
-        Size = UDim2.new(1, 0, 0, 1),
-        Position = UDim2.fromScale(0, 0.5),
-        BackgroundColor3 = Color3.fromRGB(50, 50, 50),
-        Parent = divider
-    })
-    
-    if text and text ~= "" then
-        local label = Create("TextLabel", {
-            Text = text,
-            Font = Enum.Font.GothamMedium,
-            TextSize = 10,
-            TextColor3 = Color3.fromRGB(150, 150, 150),
-            BackgroundTransparency = 1,
-            Size = UDim2.new(0, text:len() * 8, 1, 0),
-            Position = UDim2.fromScale(0.5, 0),
-            AnchorPoint = Vector2.new(0.5, 0),
-            Parent = divider
-        })
-        line.Visible = false
-    end
-    
-    return divider
-end
-
--- Create space (just empty spacing)
-local function CreateSpace(parent, height)
-    local space = Create("Frame", {
-        Size = UDim2.new(1, 0, 0, height or 10),
-        BackgroundTransparency = 1,
-        Parent = parent
-    })
-    return space
 end
 
 function Library:CreateWindow(config)
@@ -432,7 +348,6 @@ function Library:CreateWindow(config)
     local Player = Players.LocalPlayer
     
     local titleText = config.Title or "PREMIUM UI"
-    local icon = config.Icon and LoadIcon(config.Icon, "lucide")
     local keySystem = config.KeySystem
     local hasKey = false
     
@@ -549,9 +464,9 @@ function Library:CreateWindow(config)
             if valid then
                 hasKey = true
                 keyFrame:Destroy()
-                Library:Notify("Success", "Key verified! Welcome to " .. titleText, 3)
+                Library:Notify({Title = "Success", Content = "Key verified! Welcome to " .. titleText, Duration = 3})
             else
-                Library:Notify("Error", "Invalid key! Please try again.", 3, nil)
+                Library:Notify({Title = "Error", Content = "Invalid key! Please try again.", Duration = 3})
             end
         end)
         
@@ -562,9 +477,7 @@ function Library:CreateWindow(config)
                 Library:Dialog({
                     Title = "Get Key",
                     Content = "Join our Discord server to get a key.",
-                    Callback = function()
-                        Library:Notify("Info", "Check Discord for key information", 3)
-                    end
+                    Buttons = {{Title = "OK", Callback = function() end}}
                 })
             end
         end)
@@ -579,14 +492,14 @@ function Library:CreateWindow(config)
         Size = UDim2.fromOffset(40, 40),
         Position = UDim2.new(0, 15, 0.5, -20),
         BackgroundColor3 = Color3.fromRGB(10, 10, 10),
-        Image = icon or "rbxassetid://74666642456643",
+        Image = config.Icon and LoadIcon(config.Icon, "lucide") or "rbxassetid://74666642456643",
         Parent = screenGui
     }, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
     ApplyPremiumBorder(OpenButton, 2)
 
     local MainFrame = Create("Frame", {
         Name = "MainFrame",
-        Size = UDim2.fromOffset(520, 420),
+        Size = UDim2.fromOffset(560, 480),
         Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = Color3.fromRGB(8, 8, 8),
@@ -621,28 +534,46 @@ function Library:CreateWindow(config)
     OpenButton.MouseButton1Click:Connect(function()
         MainFrame.Visible = not MainFrame.Visible
         if MainFrame.Visible then 
-            MainFrame:TweenSize(UDim2.fromOffset(520, 420), "Out", "Back", 0.4, true)
-            if titleContainer and letterLabels then
-                for _, letterLabel in ipairs(letterLabels) do
-                    letterLabel.TextTransparency = 1
-                end
-                for i, letterLabel in ipairs(letterLabels) do
-                    task.wait(0.05)
-                    TweenService:Create(letterLabel, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-                        TextTransparency = 0
-                    }):Play()
-                end
-            end
+            MainFrame:TweenSize(UDim2.fromOffset(560, 480), "Out", "Back", 0.4, true)
         end
     end)
 
     local TopBar = Create("Frame", {
-        Size = UDim2.new(1, 0, 0, 40),
+        Size = UDim2.new(1, 0, 0, 45),
         BackgroundTransparency = 1,
         Parent = MainFrame
     })
     
-    local titleContainer, letterLabels = CreateAnimatedTitle(TopBar, titleText, UDim2.fromOffset(12, 0), UDim2.new(1, -100, 1, 0), icon)
+    local titleContainer = Create("Frame", {
+        Size = UDim2.new(1, -100, 1, 0),
+        Position = UDim2.fromOffset(12, 0),
+        BackgroundTransparency = 1,
+        Parent = TopBar
+    })
+    
+    if config.Icon then
+        local iconImg = LoadIcon(config.Icon, "lucide")
+        if iconImg then
+            Create("ImageLabel", {
+                Size = UDim2.fromOffset(18, 18),
+                Position = UDim2.fromOffset(0, 13),
+                BackgroundTransparency = 1,
+                Image = iconImg,
+                Parent = titleContainer
+            })
+        end
+    end
+    
+    Create("TextLabel", {
+        Text = titleText,
+        Font = Enum.Font.GothamBold,
+        TextSize = 16,
+        TextColor3 = Color3.fromRGB(230, 230, 230),
+        BackgroundTransparency = 1,
+        Position = UDim2.fromOffset(config.Icon and 22 or 0, 12),
+        Size = UDim2.new(1, -30, 0, 25),
+        Parent = titleContainer
+    })
     
     if config.Author then
         Create("TextLabel", {
@@ -651,44 +582,42 @@ function Library:CreateWindow(config)
             TextSize = 8,
             TextColor3 = Color3.fromRGB(150, 150, 150),
             BackgroundTransparency = 1,
-            Position = UDim2.new(1, -110, 0, 28),
+            Position = UDim2.new(1, -110, 0, 32),
             Size = UDim2.new(0, 100, 0, 10),
             Parent = TopBar
         })
     end
     
     local CloseBtn = Create("ImageButton", {
-        Size = UDim2.fromOffset(20, 20),
-        Position = UDim2.new(1, -30, 0, 10),
+        Size = UDim2.fromOffset(24, 24),
+        Position = UDim2.new(1, -35, 0, 10),
         BackgroundTransparency = 1,
         Image = "rbxassetid://74666642456643",
         ImageColor3 = Color3.fromRGB(200, 200, 200),
         Parent = TopBar
     })
     CloseBtn.MouseButton1Click:Connect(function() 
-        MainFrame:TweenSize(UDim2.fromOffset(0, 0), "In", "Back", 0.3, true, function() 
-            MainFrame.Visible = false 
-        end) 
+        MainFrame.Visible = false 
     end)
 
     -- Sidebar
     local Sidebar = Create("ScrollingFrame", {
-        Size = UDim2.new(0, 130, 1, -50),
-        Position = UDim2.fromOffset(10, 50),
+        Size = UDim2.new(0, 140, 1, -55),
+        Position = UDim2.fromOffset(10, 55),
         BackgroundColor3 = Color3.fromRGB(12, 12, 12),
         Parent = MainFrame,
         ScrollBarThickness = 0
     }, {
         Create("UICorner", {CornerRadius = UDim.new(0, 8)}),
         Create("UIListLayout", {Padding = UDim.new(0, 6), HorizontalAlignment = "Center"}),
-        Create("UIPadding", {PaddingTop = UDim.new(0, 8), PaddingBottom = UDim.new(0, 8)})
+        Create("UIPadding", {PaddingTop = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10)})
     })
     ApplyPremiumBorder(Sidebar, 1.2)
 
     -- Container
     local Container = Create("ScrollingFrame", {
-        Size = UDim2.new(1, -150, 1, -50),
-        Position = UDim2.fromOffset(150, 50),
+        Size = UDim2.new(1, -160, 1, -55),
+        Position = UDim2.fromOffset(160, 55),
         BackgroundTransparency = 1,
         Parent = MainFrame,
         ScrollBarThickness = 4,
@@ -697,10 +626,34 @@ function Library:CreateWindow(config)
 
     local Window = {}
     local firstTab = true
-
-    function Window:CreateTab(name, tabIcon)
+    local tabs = {}
+    
+    -- Divider for window
+    function Window:Divider()
+        local divider = Create("Frame", {
+            Size = UDim2.new(0.85, 0, 0, 1),
+            BackgroundColor3 = Color3.fromRGB(50, 50, 50),
+            Parent = Sidebar
+        })
+        return divider
+    end
+    
+    -- Space for window
+    function Window:Space(height)
+        local space = Create("Frame", {
+            Size = UDim2.new(1, 0, 0, height or 10),
+            BackgroundTransparency = 1,
+            Parent = Sidebar
+        })
+        return space
+    end
+    
+    function Window:CreateTab(config)
+        local name = config.Title or "Tab"
+        local tabIcon = config.Icon
+        
         local TabBtn = Create("TextButton", {
-            Size = UDim2.new(0.85, 0, 0, 32),
+            Size = UDim2.new(0.85, 0, 0, 36),
             BackgroundColor3 = firstTab and Color3.fromRGB(220, 220, 220) or Color3.fromRGB(20, 20, 20),
             Text = name,
             TextColor3 = firstTab and Color3.fromRGB(20, 20, 20) or Color3.fromRGB(200, 200, 200),
@@ -713,8 +666,8 @@ function Library:CreateWindow(config)
             local iconImg = LoadIcon(tabIcon, "lucide")
             if iconImg then
                 Create("ImageLabel", {
-                    Size = UDim2.fromOffset(14, 14),
-                    Position = UDim2.fromOffset(8, 9),
+                    Size = UDim2.fromOffset(16, 16),
+                    Position = UDim2.fromOffset(8, 10),
                     BackgroundTransparency = 1,
                     Image = iconImg,
                     ImageColor3 = firstTab and Color3.fromRGB(20, 20, 20) or Color3.fromRGB(200, 200, 200),
@@ -731,8 +684,8 @@ function Library:CreateWindow(config)
             ScrollBarThickness = 0,
             Parent = Container
         }, {
-            Create("UIListLayout", {Padding = UDim.new(0, 8), HorizontalAlignment = "Center"}),
-            Create("UIPadding", {PaddingTop = UDim.new(0, 5), PaddingBottom = UDim.new(0, 5)})
+            Create("UIListLayout", {Padding = UDim.new(0, 12), HorizontalAlignment = "Center"}),
+            Create("UIPadding", {PaddingTop = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10)})
         })
 
         TabBtn.MouseButton1Click:Connect(function()
@@ -762,22 +715,36 @@ function Library:CreateWindow(config)
         local Tab = {}
         
         -- Create section
-        function Tab:CreateSection(title, desc)
+        function Tab:Section(config)
+            local title = config.Title or "Section"
+            local desc = config.Desc
+            local box = config.Box == nil and true or config.Box
+            local fontWeight = config.FontWeight or "Medium"
+            local textTransparency = config.TextTransparency or 0
+            local textXAlignment = config.TextXAlignment or "Left"
+            local textSize = config.TextSize or 14
+            
             local section = Create("Frame", {
-                Size = UDim2.new(0.96, 0, 0, desc and 60 or 40),
-                BackgroundColor3 = Color3.fromRGB(18, 18, 18),
+                Size = UDim2.new(0.96, 0, 0, desc and 65 or 45),
+                BackgroundColor3 = box and Color3.fromRGB(18, 18, 18) or Color3.fromRGB(8, 8, 8),
                 Parent = Page
             }, {
                 Create("UICorner", {CornerRadius = UDim.new(0, 6)})
             })
-            ApplyPremiumBorder(section, 1)
+            
+            if box then
+                ApplyPremiumBorder(section, 1)
+            end
+            
+            local font = fontWeight == "Bold" and Enum.Font.GothamBold or Enum.Font.GothamMedium
             
             Create("TextLabel", {
                 Text = title:upper(),
-                Font = Enum.Font.GothamBold,
-                TextSize = 12,
+                Font = font,
+                TextSize = textSize,
                 TextColor3 = Color3.fromRGB(220, 220, 220),
-                TextXAlignment = "Left",
+                TextXAlignment = textXAlignment,
+                TextTransparency = textTransparency,
                 BackgroundTransparency = 1,
                 Position = UDim2.fromOffset(12, 12),
                 Size = UDim2.new(1, -24, 0, 20),
@@ -788,11 +755,11 @@ function Library:CreateWindow(config)
                 Create("TextLabel", {
                     Text = desc,
                     Font = Enum.Font.GothamMedium,
-                    TextSize = 10,
+                    TextSize = 11,
                     TextColor3 = Color3.fromRGB(150, 150, 150),
-                    TextXAlignment = "Left",
+                    TextXAlignment = textXAlignment,
                     BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(12, 32),
+                    Position = UDim2.fromOffset(12, 35),
                     Size = UDim2.new(1, -24, 0, 20),
                     Parent = section
                 })
@@ -801,116 +768,15 @@ function Library:CreateWindow(config)
             return section
         end
         
-        -- Create section tab
-        function Tab:CreateSectionTab(title, items)
-            local sectionTabFrame = Create("Frame", {
-                Size = UDim2.new(0.96, 0, 0, 45),
-                BackgroundColor3 = Color3.fromRGB(18, 18, 18),
-                Parent = Page
-            }, {
-                Create("UICorner", {CornerRadius = UDim.new(0, 6)})
-            })
-            ApplyPremiumBorder(sectionTabFrame, 1)
-            
-            if title then
-                Create("TextLabel", {
-                    Text = title,
-                    Font = Enum.Font.GothamMedium,
-                    TextSize = 10,
-                    TextColor3 = Color3.fromRGB(150, 150, 150),
-                    BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(12, 5),
-                    Size = UDim2.new(1, -24, 0, 15),
-                    Parent = sectionTabFrame
-                })
-            end
-            
-            local buttonContainer = Create("Frame", {
-                Size = UDim2.new(1, -10, 0, 30),
-                Position = UDim2.fromOffset(5, title and 22 or 10),
-                BackgroundTransparency = 1,
-                Parent = sectionTabFrame
-            })
-            
-            local buttons = {}
-            
-            for i, item in ipairs(items) do
-                local btn = Create("TextButton", {
-                    Size = UDim2.new(1 / #items, -5, 1, 0),
-                    Position = UDim2.new((i-1) / #items, 5, 0, 0),
-                    BackgroundColor3 = i == 1 and Color3.fromRGB(200, 200, 200) or Color3.fromRGB(30, 30, 30),
-                    Text = item.name,
-                    TextColor3 = i == 1 and Color3.fromRGB(20, 20, 20) or Color3.fromRGB(200, 200, 200),
-                    Font = Enum.Font.GothamBold,
-                    TextSize = 10,
-                    Parent = buttonContainer
-                }, {Create("UICorner", {CornerRadius = UDim.new(0, 4)})})
-                
-                btn.MouseButton1Click:Connect(function()
-                    for j, b in ipairs(buttons) do
-                        TweenService:Create(b, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 30), TextColor3 = Color3.fromRGB(200, 200, 200)}):Play()
-                    end
-                    TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(200, 200, 200), TextColor3 = Color3.fromRGB(20, 20, 20)}):Play()
-                    if item.callback then item.callback() end
-                end)
-                
-                table.insert(buttons, btn)
-            end
-            
-            return sectionTabFrame
-        end
-        
-        -- Create button
-        function Tab:CreateButton(text, callback, buttonIcon, desc)
-            local Btn = Create("TextButton", {
-                Size = UDim2.new(0.96, 0, 0, desc and 50 or 38),
-                BackgroundColor3 = Color3.fromRGB(18, 18, 18),
-                Text = text,
-                TextColor3 = Color3.fromRGB(230, 230, 230),
-                Font = Enum.Font.GothamMedium,
-                TextSize = 11,
-                Parent = Page
-            }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
-            ApplyPremiumBorder(Btn, 1)
-            
-            if buttonIcon then
-                local iconImg = LoadIcon(buttonIcon, "lucide")
-                if iconImg then
-                    Create("ImageLabel", {
-                        Size = UDim2.fromOffset(14, 14),
-                        Position = UDim2.fromOffset(10, desc and 18 or 12),
-                        BackgroundTransparency = 1,
-                        Image = iconImg,
-                        Parent = Btn
-                    })
-                    Btn.Text = "  " .. text
-                end
-            end
-            
-            if desc then
-                Create("TextLabel", {
-                    Text = desc,
-                    Font = Enum.Font.GothamMedium,
-                    TextSize = 9,
-                    TextColor3 = Color3.fromRGB(120, 120, 120),
-                    BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(buttonIcon and 30 or 12, 28),
-                    Size = UDim2.new(1, -40, 0, 18),
-                    TextXAlignment = "Left",
-                    Parent = Btn
-                })
-            end
-            
-            Btn.MouseButton1Click:Connect(function() 
-                if callback then callback() end 
-                Btn:TweenSize(UDim2.new(0.9, 0, 0, desc and 47 or 35), "Out", "Quad", 0.1, true, function() 
-                    Btn:TweenSize(UDim2.new(0.96, 0, 0, desc and 50 or 38), "Out", "Quad", 0.1, true) 
-                end) 
-            end)
-        end
-        
         -- Create toggle
-        function Tab:CreateToggle(text, callback, default, desc)
+        function Tab:Toggle(config)
+            local title = config.Title or "Toggle"
+            local desc = config.Desc
+            local icon = config.Icon
+            local toggleType = config.Type or "Checkbox"
+            local toggled = config.Value or false
+            local callback = config.Callback
+            
             local TglFrame = Create("Frame", {
                 Size = UDim2.new(0.96, 0, 0, desc and 55 or 38),
                 BackgroundColor3 = Color3.fromRGB(18, 18, 18),
@@ -918,14 +784,28 @@ function Library:CreateWindow(config)
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
             ApplyPremiumBorder(TglFrame, 1)
             
+            if icon then
+                local iconImg = LoadIcon(icon, "lucide")
+                if iconImg then
+                    Create("ImageLabel", {
+                        Size = UDim2.fromOffset(16, 16),
+                        Position = UDim2.fromOffset(12, desc and 12 or 11),
+                        BackgroundTransparency = 1,
+                        Image = iconImg,
+                        ImageColor3 = Color3.fromRGB(180, 180, 180),
+                        Parent = TglFrame
+                    })
+                end
+            end
+            
             Create("TextLabel", {
-                Text = text,
+                Text = title,
                 Font = Enum.Font.GothamMedium,
                 TextSize = 11,
                 TextColor3 = Color3.fromRGB(200, 200, 200),
                 TextXAlignment = "Left",
                 BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(12, desc and 10 or 0),
+                Position = UDim2.fromOffset(icon and 35 or 12, desc and 10 or 0),
                 Size = UDim2.new(1, -70, desc and 18 or 38, 0),
                 Parent = TglFrame
             })
@@ -938,7 +818,7 @@ function Library:CreateWindow(config)
                     TextColor3 = Color3.fromRGB(120, 120, 120),
                     TextXAlignment = "Left",
                     BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(12, 28),
+                    Position = UDim2.fromOffset(icon and 35 or 12, 28),
                     Size = UDim2.new(1, -70, 0, 20),
                     Parent = TglFrame
                 })
@@ -947,19 +827,18 @@ function Library:CreateWindow(config)
             local TglBtn = Create("TextButton", {
                 Size = UDim2.fromOffset(40, 20),
                 Position = UDim2.new(1, -52, desc and 0.3 or 0.5, desc and -10 or -10),
-                BackgroundColor3 = default and Color3.fromRGB(200, 200, 200) or Color3.fromRGB(35, 35, 35),
+                BackgroundColor3 = toggled and Color3.fromRGB(200, 200, 200) or Color3.fromRGB(35, 35, 35),
                 Text = "",
                 Parent = TglFrame
             }, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
             
             local Circle = Create("Frame", {
                 Size = UDim2.fromOffset(16, 16),
-                Position = default and UDim2.fromOffset(22, 2) or UDim2.fromOffset(2, 2),
+                Position = toggled and UDim2.fromOffset(22, 2) or UDim2.fromOffset(2, 2),
                 BackgroundColor3 = Color3.fromRGB(255, 255, 255),
                 Parent = TglBtn
             }, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
             
-            local toggled = default or false
             TglBtn.MouseButton1Click:Connect(function() 
                 toggled = not toggled
                 local targetPos = toggled and UDim2.fromOffset(22, 2) or UDim2.fromOffset(2, 2)
@@ -970,14 +849,71 @@ function Library:CreateWindow(config)
             end)
         end
         
+        -- Create button
+        function Tab:Button(config)
+            local title = config.Title or "Button"
+            local desc = config.Desc
+            local locked = config.Locked or false
+            local callback = config.Callback
+            
+            local Btn = Create("TextButton", {
+                Size = UDim2.new(0.96, 0, 0, desc and 50 or 38),
+                BackgroundColor3 = locked and Color3.fromRGB(30, 30, 30) or Color3.fromRGB(18, 18, 18),
+                Text = title,
+                TextColor3 = locked and Color3.fromRGB(100, 100, 100) or Color3.fromRGB(230, 230, 230),
+                Font = Enum.Font.GothamMedium,
+                TextSize = 11,
+                Parent = Page
+            }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
+            ApplyPremiumBorder(Btn, 1)
+            
+            if config.Icon then
+                local iconImg = LoadIcon(config.Icon, "lucide")
+                if iconImg then
+                    Create("ImageLabel", {
+                        Size = UDim2.fromOffset(14, 14),
+                        Position = UDim2.fromOffset(10, desc and 18 or 12),
+                        BackgroundTransparency = 1,
+                        Image = iconImg,
+                        ImageColor3 = locked and Color3.fromRGB(100, 100, 100) or Color3.fromRGB(200, 200, 200),
+                        Parent = Btn
+                    })
+                    Btn.Text = "  " .. title
+                end
+            end
+            
+            if desc then
+                Create("TextLabel", {
+                    Text = desc,
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 9,
+                    TextColor3 = locked and Color3.fromRGB(70, 70, 70) or Color3.fromRGB(120, 120, 120),
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(config.Icon and 30 or 12, 28),
+                    Size = UDim2.new(1, -40, 0, 18),
+                    TextXAlignment = "Left",
+                    Parent = Btn
+                })
+            end
+            
+            if not locked then
+                Btn.MouseButton1Click:Connect(function() 
+                    if callback then callback() end 
+                    Btn:TweenSize(UDim2.new(0.9, 0, 0, desc and 47 or 35), "Out", "Quad", 0.1, true, function() 
+                        Btn:TweenSize(UDim2.new(0.96, 0, 0, desc and 50 or 38), "Out", "Quad", 0.1, true) 
+                    end) 
+                end)
+            end
+        end
+        
         -- Create slider with step support
-        function Tab:CreateSlider(config)
+        function Tab:Slider(config)
             local title = config.Title or "Slider"
             local desc = config.Desc
             local step = config.Step or 1
-            local min = config.Value.Min or 0
-            local max = config.Value.Max or 100
-            local default = config.Value.Default or min
+            local min = config.Min or 0
+            local max = config.Max or 100
+            local default = config.Value or min
             local callback = config.Callback
             
             local SliderFrame = Create("Frame", {
@@ -987,6 +923,19 @@ function Library:CreateWindow(config)
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
             ApplyPremiumBorder(SliderFrame, 1)
             
+            if config.Icon then
+                local iconImg = LoadIcon(config.Icon, "lucide")
+                if iconImg then
+                    Create("ImageLabel", {
+                        Size = UDim2.fromOffset(14, 14),
+                        Position = UDim2.fromOffset(12, 12),
+                        BackgroundTransparency = 1,
+                        Image = iconImg,
+                        Parent = SliderFrame
+                    })
+                end
+            end
+            
             Create("TextLabel", {
                 Text = title,
                 Font = Enum.Font.GothamMedium,
@@ -994,7 +943,7 @@ function Library:CreateWindow(config)
                 TextColor3 = Color3.fromRGB(200, 200, 200),
                 TextXAlignment = "Left",
                 BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(12, 8),
+                Position = UDim2.fromOffset(config.Icon and 32 or 12, 8),
                 Size = UDim2.new(1, -80, 0, 18),
                 Parent = SliderFrame
             })
@@ -1007,11 +956,11 @@ function Library:CreateWindow(config)
                     TextColor3 = Color3.fromRGB(120, 120, 120),
                     TextXAlignment = "Left",
                     BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(12, 28),
+                    Position = UDim2.fromOffset(config.Icon and 32 or 12, 28),
                     Size = UDim2.new(1, -80, 0, 20),
                     Parent = SliderFrame
                 })
-            end
+            }
             
             local ValueLabel = Create("TextLabel", {
                 Text = tostring(default),
@@ -1081,7 +1030,7 @@ function Library:CreateWindow(config)
         end
         
         -- Create dropdown with multi support
-        function Tab:CreateDropdown(config)
+        function Tab:Dropdown(config)
             local title = config.Title or "Dropdown"
             local desc = config.Desc
             local values = config.Values or {}
@@ -1110,6 +1059,19 @@ function Library:CreateWindow(config)
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
             ApplyPremiumBorder(DropdownFrame, 1)
             
+            if config.Icon then
+                local iconImg = LoadIcon(config.Icon, "lucide")
+                if iconImg then
+                    Create("ImageLabel", {
+                        Size = UDim2.fromOffset(14, 14),
+                        Position = UDim2.fromOffset(12, 12),
+                        BackgroundTransparency = 1,
+                        Image = iconImg,
+                        Parent = DropdownFrame
+                    })
+                end
+            end
+            
             Create("TextLabel", {
                 Text = title,
                 Font = Enum.Font.GothamMedium,
@@ -1117,7 +1079,7 @@ function Library:CreateWindow(config)
                 TextColor3 = Color3.fromRGB(200, 200, 200),
                 TextXAlignment = "Left",
                 BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(12, 8),
+                Position = UDim2.fromOffset(config.Icon and 32 or 12, 8),
                 Size = UDim2.new(1, -100, 0, 18),
                 Parent = DropdownFrame
             })
@@ -1130,7 +1092,7 @@ function Library:CreateWindow(config)
                     TextColor3 = Color3.fromRGB(120, 120, 120),
                     TextXAlignment = "Left",
                     BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(12, 28),
+                    Position = UDim2.fromOffset(config.Icon and 32 or 12, 28),
                     Size = UDim2.new(1, -100, 0, 20),
                     Parent = DropdownFrame
                 })
@@ -1168,7 +1130,7 @@ function Library:CreateWindow(config)
             
             local function selectOption(option)
                 if multi then
-                    local index = table.find(selectedValues, option)
+                    local index = table_find(selectedValues, option)
                     if index then
                         table.remove(selectedValues, index)
                     else
@@ -1213,7 +1175,7 @@ function Library:CreateWindow(config)
                             Parent = dropdownList
                         }, {Create("UICorner", {CornerRadius = UDim.new(0, 4)})})
                         
-                        if multi and table.find(selectedValues, option) then
+                        if multi and table_find(selectedValues, option) then
                             optionBtn.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
                             optionBtn.TextColor3 = Color3.fromRGB(20, 20, 20)
                         end
@@ -1221,7 +1183,7 @@ function Library:CreateWindow(config)
                         optionBtn.MouseButton1Click:Connect(function()
                             selectOption(option)
                             if multi then
-                                if table.find(selectedValues, option) then
+                                if table_find(selectedValues, option) then
                                     optionBtn.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
                                     optionBtn.TextColor3 = Color3.fromRGB(20, 20, 20)
                                 else
@@ -1263,13 +1225,13 @@ function Library:CreateWindow(config)
         end
         
         -- Create input with textarea support
-        function Tab:CreateInput(config)
+        function Tab:Input(config)
             local title = config.Title or "Input"
             local desc = config.Desc
             local defaultValue = config.Value or ""
             local inputType = config.Type or "Input"
             local placeholder = config.Placeholder or "Enter text..."
-            local inputIcon = config.InputIcon
+            local inputIcon = config.Icon
             local callback = config.Callback
             
             local height = inputType == "Textarea" and 90 or 55
@@ -1282,6 +1244,19 @@ function Library:CreateWindow(config)
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
             ApplyPremiumBorder(InputFrame, 1)
             
+            if inputIcon then
+                local iconImg = LoadIcon(inputIcon, "lucide")
+                if iconImg then
+                    Create("ImageLabel", {
+                        Size = UDim2.fromOffset(14, 14),
+                        Position = UDim2.fromOffset(12, 12),
+                        BackgroundTransparency = 1,
+                        Image = iconImg,
+                        Parent = InputFrame
+                    })
+                end
+            end
+            
             Create("TextLabel", {
                 Text = title,
                 Font = Enum.Font.GothamMedium,
@@ -1289,7 +1264,7 @@ function Library:CreateWindow(config)
                 TextColor3 = Color3.fromRGB(200, 200, 200),
                 TextXAlignment = "Left",
                 BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(12, 8),
+                Position = UDim2.fromOffset(inputIcon and 32 or 12, 8),
                 Size = UDim2.new(1, -80, 0, 18),
                 Parent = InputFrame
             })
@@ -1302,7 +1277,7 @@ function Library:CreateWindow(config)
                     TextColor3 = Color3.fromRGB(120, 120, 120),
                     TextXAlignment = "Left",
                     BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(12, 28),
+                    Position = UDim2.fromOffset(inputIcon and 32 or 12, 28),
                     Size = UDim2.new(1, -80, 0, 20),
                     Parent = InputFrame
                 })
@@ -1341,27 +1316,23 @@ function Library:CreateWindow(config)
                 }, {Create("UICorner", {CornerRadius = UDim.new(0, 4)})})
             end
             
-            if inputIcon then
-                local iconImg = LoadIcon(inputIcon, "lucide")
-                if iconImg then
-                    Create("ImageLabel", {
-                        Size = UDim2.fromOffset(14, 14),
-                        Position = UDim2.new(1, -28, inputY == 28 and 0.5 or 0.3, inputY == 28 and -7 or -5),
-                        BackgroundTransparency = 1,
-                        Image = iconImg,
-                        ImageColor3 = Color3.fromRGB(150, 150, 150),
-                        Parent = InputFrame
-                    })
-                end
-            end
-            
             inputBox:GetPropertyChangedSignal("Text"):Connect(function()
                 if callback then callback(inputBox.Text) end
             end)
         end
         
         -- Create paragraph
-        function Tab:CreateParagraph(text)
+        function Tab:Paragraph(config)
+            local title = config.Title or ""
+            local desc = config.Desc or ""
+            local color = config.Color
+            local image = config.Image
+            local imageSize = config.ImageSize or 30
+            local thumbnail = config.Thumbnail
+            local thumbnailSize = config.ThumbnailSize or 80
+            local locked = config.Locked or false
+            local buttons = config.Buttons or {}
+            
             local ParaFrame = Create("Frame", {
                 Size = UDim2.new(0.96, 0, 0, 0),
                 BackgroundColor3 = Color3.fromRGB(18, 18, 18),
@@ -1370,24 +1341,107 @@ function Library:CreateWindow(config)
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
             ApplyPremiumBorder(ParaFrame, 1)
             
-            Create("TextLabel", {
-                Text = text,
-                Font = Enum.Font.GothamMedium,
-                TextSize = 10,
-                TextColor3 = Color3.fromRGB(160, 160, 160),
-                TextWrapped = true,
-                BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(12, 12),
+            local contentFrame = Create("Frame", {
                 Size = UDim2.new(1, -24, 0, 0),
+                Position = UDim2.fromOffset(12, 12),
+                BackgroundTransparency = 1,
                 AutomaticSize = Enum.AutomaticSize.Y,
                 Parent = ParaFrame
             })
             
-            ParaFrame.Size = UDim2.new(0.96, 0, 0, ParaFrame:FindFirstChildOfClass("TextLabel").TextBounds.Y + 24)
+            if thumbnail then
+                local thumbnailImg = LoadIcon(thumbnail, "lucide")
+                if thumbnailImg then
+                    Create("ImageLabel", {
+                        Size = UDim2.fromOffset(thumbnailSize, thumbnailSize),
+                        Position = UDim2.fromOffset(0, 0),
+                        BackgroundTransparency = 1,
+                        Image = thumbnailImg,
+                        Parent = contentFrame
+                    })
+                end
+            end
+            
+            if title and title ~= "" then
+                local titleColor = color and Color3.fromHex(color) or Color3.fromRGB(220, 220, 220)
+                Create("TextLabel", {
+                    Text = title,
+                    Font = Enum.Font.GothamBold,
+                    TextSize = 14,
+                    TextColor3 = titleColor,
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(thumbnail and thumbnailSize + 10 or 0, 0),
+                    Size = UDim2.new(1, -(thumbnail and thumbnailSize + 10 or 0), 0, 20),
+                    Parent = contentFrame
+                })
+            end
+            
+            if desc and desc ~= "" then
+                Create("TextLabel", {
+                    Text = desc,
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 11,
+                    TextColor3 = locked and Color3.fromRGB(100, 100, 100) or Color3.fromRGB(160, 160, 160),
+                    TextWrapped = true,
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(thumbnail and thumbnailSize + 10 or 0, title and 25 or 0),
+                    Size = UDim2.new(1, -(thumbnail and thumbnailSize + 10 or 0), 0, 0),
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    Parent = contentFrame
+                })
+            end
+            
+            if #buttons > 0 then
+                local buttonFrame = Create("Frame", {
+                    Size = UDim2.new(1, 0, 0, 35),
+                    Position = UDim2.fromOffset(thumbnail and thumbnailSize + 10 or 0, (desc and 50 or 30) + (title and 25 or 0)),
+                    BackgroundTransparency = 1,
+                    Parent = contentFrame
+                })
+                
+                for i, btnConfig in ipairs(buttons) do
+                    local btn = Create("TextButton", {
+                        Size = UDim2.new(0.48, 0, 1, 0),
+                        Position = UDim2.new((i-1) * 0.52, 0, 0, 0),
+                        BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+                        Text = btnConfig.Title,
+                        TextColor3 = Color3.fromRGB(200, 200, 200),
+                        Font = Enum.Font.GothamMedium,
+                        TextSize = 10,
+                        Parent = buttonFrame
+                    }, {Create("UICorner", {CornerRadius = UDim.new(0, 4)})})
+                    
+                    if btnConfig.Icon then
+                        local iconImg = LoadIcon(btnConfig.Icon, "lucide")
+                        if iconImg then
+                            Create("ImageLabel", {
+                                Size = UDim2.fromOffset(12, 12),
+                                Position = UDim2.fromOffset(8, 11),
+                                BackgroundTransparency = 1,
+                                Image = iconImg,
+                                Parent = btn
+                            })
+                        end
+                    end
+                    
+                    if not locked then
+                        btn.MouseButton1Click:Connect(function()
+                            if btnConfig.Callback then btnConfig.Callback() end
+                        end)
+                    end
+                end
+            end
+            
+            ParaFrame.Size = UDim2.new(0.96, 0, 0, contentFrame.AbsoluteSize.Y + 24)
         end
         
         -- Create keybind
-        function Tab:CreateKeybind(text, default, callback, desc)
+        function Tab:Keybind(config)
+            local title = config.Title or "Keybind"
+            local desc = config.Desc
+            local default = config.Value
+            local callback = config.Callback
+            
             local KeybindFrame = Create("Frame", {
                 Size = UDim2.new(0.96, 0, 0, desc and 55 or 45),
                 BackgroundColor3 = Color3.fromRGB(18, 18, 18),
@@ -1395,14 +1449,27 @@ function Library:CreateWindow(config)
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
             ApplyPremiumBorder(KeybindFrame, 1)
             
+            if config.Icon then
+                local iconImg = LoadIcon(config.Icon, "lucide")
+                if iconImg then
+                    Create("ImageLabel", {
+                        Size = UDim2.fromOffset(14, 14),
+                        Position = UDim2.fromOffset(12, 12),
+                        BackgroundTransparency = 1,
+                        Image = iconImg,
+                        Parent = KeybindFrame
+                    })
+                end
+            end
+            
             Create("TextLabel", {
-                Text = text,
+                Text = title,
                 Font = Enum.Font.GothamMedium,
                 TextSize = 11,
                 TextColor3 = Color3.fromRGB(200, 200, 200),
                 TextXAlignment = "Left",
                 BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(12, desc and 8 or 0),
+                Position = UDim2.fromOffset(config.Icon and 32 or 12, desc and 8 or 0),
                 Size = UDim2.new(1, -140, desc and 18 or 45, 0),
                 Parent = KeybindFrame
             })
@@ -1415,7 +1482,7 @@ function Library:CreateWindow(config)
                     TextColor3 = Color3.fromRGB(120, 120, 120),
                     TextXAlignment = "Left",
                     BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(12, 28),
+                    Position = UDim2.fromOffset(config.Icon and 32 or 12, 28),
                     Size = UDim2.new(1, -140, 0, 20),
                     Parent = KeybindFrame
                 })
@@ -1464,7 +1531,14 @@ function Library:CreateWindow(config)
         end
         
         -- Create colorpicker
-        function Tab:CreateColorPicker(text, default, callback, desc)
+        function Tab:Colorpicker(config)
+            local title = config.Title or "Colorpicker"
+            local desc = config.Desc
+            local default = config.Default or Color3.fromRGB(255, 255, 255)
+            local transparency = config.Transparency or 0
+            local locked = config.Locked or false
+            local callback = config.Callback
+            
             local ColorFrame = Create("Frame", {
                 Size = UDim2.new(0.96, 0, 0, desc and 55 or 45),
                 BackgroundColor3 = Color3.fromRGB(18, 18, 18),
@@ -1472,14 +1546,27 @@ function Library:CreateWindow(config)
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
             ApplyPremiumBorder(ColorFrame, 1)
             
+            if config.Icon then
+                local iconImg = LoadIcon(config.Icon, "lucide")
+                if iconImg then
+                    Create("ImageLabel", {
+                        Size = UDim2.fromOffset(14, 14),
+                        Position = UDim2.fromOffset(12, 12),
+                        BackgroundTransparency = 1,
+                        Image = iconImg,
+                        Parent = ColorFrame
+                    })
+                end
+            end
+            
             Create("TextLabel", {
-                Text = text,
+                Text = title,
                 Font = Enum.Font.GothamMedium,
                 TextSize = 11,
                 TextColor3 = Color3.fromRGB(200, 200, 200),
                 TextXAlignment = "Left",
                 BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(12, desc and 8 or 0),
+                Position = UDim2.fromOffset(config.Icon and 32 or 12, desc and 8 or 0),
                 Size = UDim2.new(1, -100, desc and 18 or 45, 0),
                 Parent = ColorFrame
             })
@@ -1492,7 +1579,7 @@ function Library:CreateWindow(config)
                     TextColor3 = Color3.fromRGB(120, 120, 120),
                     TextXAlignment = "Left",
                     BackgroundTransparency = 1,
-                    Position = UDim2.fromOffset(12, 28),
+                    Position = UDim2.fromOffset(config.Icon and 32 or 12, 28),
                     Size = UDim2.new(1, -100, 0, 20),
                     Parent = ColorFrame
                 })
@@ -1501,7 +1588,7 @@ function Library:CreateWindow(config)
             local colorDisplay = Create("Frame", {
                 Size = UDim2.fromOffset(30, 30),
                 Position = UDim2.new(1, -42, desc and 0.5 or 0.5, desc and -15 or -15),
-                BackgroundColor3 = default or Color3.fromRGB(200, 100, 100),
+                BackgroundColor3 = default,
                 Parent = ColorFrame
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 4)})})
             ApplyPremiumBorder(colorDisplay, 1)
@@ -1509,39 +1596,43 @@ function Library:CreateWindow(config)
             local colorPickerOpen = false
             local colorPicker = nil
             
-            colorDisplay.MouseButton1Click:Connect(function()
-                if colorPickerOpen then
-                    if colorPicker then colorPicker:Destroy() end
-                    colorPickerOpen = false
-                else
-                    colorPicker = Create("Frame", {
-                        Size = UDim2.fromOffset(180, 150),
-                        Position = UDim2.fromScale(0.5, 0.5),
-                        AnchorPoint = Vector2.new(0.5, 0.5),
-                        BackgroundColor3 = Color3.fromRGB(20, 20, 20),
-                        Parent = ColorFrame
-                    }, {Create("UICorner", {CornerRadius = UDim.new(0, 8)})})
-                    
-                    local rSlider, gSlider, bSlider
-                    local currentColor = colorDisplay.BackgroundColor3
-                    
-                    local function updateColor()
-                        local color = Color3.fromRGB(rSlider.Value, gSlider.Value, bSlider.Value)
-                        colorDisplay.BackgroundColor3 = color
-                        if callback then callback(color) end
+            if not locked then
+                colorDisplay.MouseButton1Click:Connect(function()
+                    if colorPickerOpen then
+                        if colorPicker then colorPicker:Destroy() end
+                        colorPickerOpen = false
+                    else
+                        colorPicker = Create("Frame", {
+                            Size = UDim2.fromOffset(200, 180),
+                            Position = UDim2.fromScale(0.5, 0.5),
+                            AnchorPoint = Vector2.new(0.5, 0.5),
+                            BackgroundColor3 = Color3.fromRGB(20, 20, 20),
+                            Parent = ColorFrame
+                        }, {Create("UICorner", {CornerRadius = UDim.new(0, 8)})})
+                        
+                        local rSlider, gSlider, bSlider
+                        local currentColor = colorDisplay.BackgroundColor3
+                        
+                        local function updateColor()
+                            local color = Color3.fromRGB(rSlider.Value, gSlider.Value, bSlider.Value)
+                            colorDisplay.BackgroundColor3 = color
+                            if callback then callback(color) end
+                        end
+                        
+                        rSlider = CreateSlider(colorPicker, "R", 0, 255, currentColor.R * 255, updateColor)
+                        gSlider = CreateSlider(colorPicker, "G", 0, 255, currentColor.G * 255, updateColor)
+                        bSlider = CreateSlider(colorPicker, "B", 0, 255, currentColor.B * 255, updateColor)
+                        
+                        colorPickerOpen = true
                     end
-                    
-                    rSlider = CreateSlider(colorPicker, "R", 0, 255, currentColor.R * 255, updateColor)
-                    gSlider = CreateSlider(colorPicker, "G", 0, 255, currentColor.G * 255, updateColor)
-                    bSlider = CreateSlider(colorPicker, "B", 0, 255, currentColor.B * 255, updateColor)
-                    
-                    colorPickerOpen = true
-                end
-            end)
+                end)
+            end
         end
         
         -- Create code
-        function Tab:CreateCode(codeText)
+        function Tab:Code(config)
+            local codeText = config.Code or ""
+            
             local CodeFrame = Create("Frame", {
                 Size = UDim2.new(0.96, 0, 0, 0),
                 BackgroundColor3 = Color3.fromRGB(18, 18, 18),
@@ -1550,6 +1641,19 @@ function Library:CreateWindow(config)
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
             ApplyPremiumBorder(CodeFrame, 1)
             
+            if config.Title then
+                Create("TextLabel", {
+                    Text = config.Title,
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 11,
+                    TextColor3 = Color3.fromRGB(200, 200, 200),
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(12, 8),
+                    Size = UDim2.new(1, -24, 0, 20),
+                    Parent = CodeFrame
+                })
+            end
+            
             local codeLabel = Create("TextLabel", {
                 Text = codeText,
                 Font = Enum.Font.Code,
@@ -1557,38 +1661,33 @@ function Library:CreateWindow(config)
                 TextColor3 = Color3.fromRGB(150, 220, 150),
                 TextWrapped = true,
                 BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(12, 12),
+                Position = UDim2.fromOffset(12, config.Title and 35 or 12),
                 Size = UDim2.new(1, -24, 0, 0),
                 AutomaticSize = Enum.AutomaticSize.Y,
                 Parent = CodeFrame
             })
             
-            CodeFrame.Size = UDim2.new(0.96, 0, 0, codeLabel.TextBounds.Y + 24)
+            CodeFrame.Size = UDim2.new(0.96, 0, 0, codeLabel.AbsoluteSize.Y + (config.Title and 45 or 25))
         end
         
         -- Create space
-        function Tab:CreateSpace(height)
-            CreateSpace(Page, height or 10)
-        end
-        
-        -- Create divider
-        function Tab:CreateDivider(text)
-            CreateDivider(Page, text or "")
-        end
-        
-        -- Create tag
-        function Tab:CreateTag(text, tagType)
-            local tagContainer = Create("Frame", {
-                Size = UDim2.new(0.96, 0, 0, 30),
+        function Tab:Space(height)
+            local space = Create("Frame", {
+                Size = UDim2.new(1, 0, 0, height or 10),
                 BackgroundTransparency = 1,
                 Parent = Page
             })
-            CreateTag(tagContainer, text, tagType)
+            return space
         end
         
-        -- Create notification
-        function Tab:CreateNotification(title, content, duration, icon)
-            Library:Notify(title, content, duration, icon)
+        -- Create divider
+        function Tab:Divider()
+            local divider = Create("Frame", {
+                Size = UDim2.new(0.96, 0, 0, 1),
+                BackgroundColor3 = Color3.fromRGB(50, 50, 50),
+                Parent = Page
+            })
+            return divider
         end
         
         return Tab
@@ -1678,14 +1777,6 @@ local function CreateSlider(parent, label, min, max, default, callback)
         valueLabel.Text = tostring(value)
         if callback then callback() end
     end}
-end
-
--- Table.find helper
-local function table.find(t, value)
-    for i, v in ipairs(t) do
-        if v == value then return i end
-    end
-    return nil
 end
 
 -- Return the library for URL loading
