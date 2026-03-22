@@ -1,8 +1,8 @@
 --[[ 
-    PREMIUM MODERN SILVER UI (V12) - COMPLETE EDITION
+    PREMIUM MODERN SILVER UI (V13) - COMPLETE EDITION
     - Style: Compact & Refined
     - Features: Key System, All UI Elements, Icons Support
-    - Icons: Lucide, Solar, SF Symbol
+    - Enhanced: Divider, Space, Dropdown (Multi), Slider (Float), Input (Textarea)
 ]]
 
 local Library = {}
@@ -75,13 +75,16 @@ function Library:Notify(title, content, duration, icon)
     ApplyPremiumBorder(Notif, 2)
 
     if icon then
-        local iconLabel = Create("ImageLabel", {
-            Size = UDim2.fromOffset(20, 20),
-            Position = UDim2.fromOffset(10, 10),
-            BackgroundTransparency = 1,
-            Image = icon,
-            Parent = Notif
-        })
+        local iconImg = LoadIcon(icon, "lucide")
+        if iconImg then
+            Create("ImageLabel", {
+                Size = UDim2.fromOffset(20, 20),
+                Position = UDim2.fromOffset(10, 10),
+                BackgroundTransparency = 1,
+                Image = iconImg,
+                Parent = Notif
+            })
+        end
     end
 
     Create("TextLabel", {Text = title:upper(), Font = Enum.Font.GothamBold, TextSize = 11, TextColor3 = Color3.fromRGB(255, 255, 255), TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(icon and 40 or 10, 8), Size = UDim2.new(1, -50, 0, 15), Parent = Notif})
@@ -379,10 +382,10 @@ local function CreateTag(parent, text, tagType)
     return tag
 end
 
--- Create divider
+-- Create divider (with line between elements)
 local function CreateDivider(parent, text)
     local divider = Create("Frame", {
-        Size = UDim2.new(0.96, 0, 0, 20),
+        Size = UDim2.new(0.96, 0, 0, 30),
         BackgroundTransparency = 1,
         Parent = parent
     })
@@ -394,7 +397,7 @@ local function CreateDivider(parent, text)
         Parent = divider
     })
     
-    if text then
+    if text and text ~= "" then
         local label = Create("TextLabel", {
             Text = text,
             Font = Enum.Font.GothamMedium,
@@ -406,12 +409,13 @@ local function CreateDivider(parent, text)
             AnchorPoint = Vector2.new(0.5, 0),
             Parent = divider
         })
+        line.Visible = false
     end
     
     return divider
 end
 
--- Create space
+-- Create space (just empty spacing)
 local function CreateSpace(parent, height)
     local space = Create("Frame", {
         Size = UDim2.new(1, 0, 0, height or 10),
@@ -582,7 +586,7 @@ function Library:CreateWindow(config)
 
     local MainFrame = Create("Frame", {
         Name = "MainFrame",
-        Size = UDim2.fromOffset(520, 380),
+        Size = UDim2.fromOffset(520, 420),
         Position = UDim2.fromScale(0.5, 0.5),
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = Color3.fromRGB(8, 8, 8),
@@ -617,7 +621,7 @@ function Library:CreateWindow(config)
     OpenButton.MouseButton1Click:Connect(function()
         MainFrame.Visible = not MainFrame.Visible
         if MainFrame.Visible then 
-            MainFrame:TweenSize(UDim2.fromOffset(520, 380), "Out", "Back", 0.4, true)
+            MainFrame:TweenSize(UDim2.fromOffset(520, 420), "Out", "Back", 0.4, true)
             if titleContainer and letterLabels then
                 for _, letterLabel in ipairs(letterLabels) do
                     letterLabel.TextTransparency = 1
@@ -693,8 +697,6 @@ function Library:CreateWindow(config)
 
     local Window = {}
     local firstTab = true
-    local tabs = {}
-    local currentTab = nil
 
     function Window:CreateTab(name, tabIcon)
         local TabBtn = Create("TextButton", {
@@ -754,16 +756,15 @@ function Library:CreateWindow(config)
                 end
             end
             Page.Visible = true
-            currentTab = Page
         end)
 
         firstTab = false
         local Tab = {}
         
         -- Create section
-        function Tab:CreateSection(title)
+        function Tab:CreateSection(title, desc)
             local section = Create("Frame", {
-                Size = UDim2.new(0.96, 0, 0, 40),
+                Size = UDim2.new(0.96, 0, 0, desc and 60 or 40),
                 BackgroundColor3 = Color3.fromRGB(18, 18, 18),
                 Parent = Page
             }, {
@@ -783,6 +784,20 @@ function Library:CreateWindow(config)
                 Parent = section
             })
             
+            if desc then
+                Create("TextLabel", {
+                    Text = desc,
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 10,
+                    TextColor3 = Color3.fromRGB(150, 150, 150),
+                    TextXAlignment = "Left",
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(12, 32),
+                    Size = UDim2.new(1, -24, 0, 20),
+                    Parent = section
+                })
+            end
+            
             return section
         end
         
@@ -797,15 +812,27 @@ function Library:CreateWindow(config)
             })
             ApplyPremiumBorder(sectionTabFrame, 1)
             
+            if title then
+                Create("TextLabel", {
+                    Text = title,
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 10,
+                    TextColor3 = Color3.fromRGB(150, 150, 150),
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(12, 5),
+                    Size = UDim2.new(1, -24, 0, 15),
+                    Parent = sectionTabFrame
+                })
+            end
+            
             local buttonContainer = Create("Frame", {
                 Size = UDim2.new(1, -10, 0, 30),
-                Position = UDim2.fromOffset(5, 10),
+                Position = UDim2.fromOffset(5, title and 22 or 10),
                 BackgroundTransparency = 1,
                 Parent = sectionTabFrame
             })
             
             local buttons = {}
-            local activeIndex = 1
             
             for i, item in ipairs(items) do
                 local btn = Create("TextButton", {
@@ -824,7 +851,6 @@ function Library:CreateWindow(config)
                         TweenService:Create(b, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 30), TextColor3 = Color3.fromRGB(200, 200, 200)}):Play()
                     end
                     TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(200, 200, 200), TextColor3 = Color3.fromRGB(20, 20, 20)}):Play()
-                    activeIndex = i
                     if item.callback then item.callback() end
                 end)
                 
@@ -835,9 +861,9 @@ function Library:CreateWindow(config)
         end
         
         -- Create button
-        function Tab:CreateButton(text, callback, buttonIcon)
+        function Tab:CreateButton(text, callback, buttonIcon, desc)
             local Btn = Create("TextButton", {
-                Size = UDim2.new(0.96, 0, 0, 38),
+                Size = UDim2.new(0.96, 0, 0, desc and 50 or 38),
                 BackgroundColor3 = Color3.fromRGB(18, 18, 18),
                 Text = text,
                 TextColor3 = Color3.fromRGB(230, 230, 230),
@@ -852,7 +878,7 @@ function Library:CreateWindow(config)
                 if iconImg then
                     Create("ImageLabel", {
                         Size = UDim2.fromOffset(14, 14),
-                        Position = UDim2.fromOffset(10, 12),
+                        Position = UDim2.fromOffset(10, desc and 18 or 12),
                         BackgroundTransparency = 1,
                         Image = iconImg,
                         Parent = Btn
@@ -861,18 +887,32 @@ function Library:CreateWindow(config)
                 end
             end
             
+            if desc then
+                Create("TextLabel", {
+                    Text = desc,
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 9,
+                    TextColor3 = Color3.fromRGB(120, 120, 120),
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(buttonIcon and 30 or 12, 28),
+                    Size = UDim2.new(1, -40, 0, 18),
+                    TextXAlignment = "Left",
+                    Parent = Btn
+                })
+            end
+            
             Btn.MouseButton1Click:Connect(function() 
                 if callback then callback() end 
-                Btn:TweenSize(UDim2.new(0.9, 0, 0, 35), "Out", "Quad", 0.1, true, function() 
-                    Btn:TweenSize(UDim2.new(0.96, 0, 0, 38), "Out", "Quad", 0.1, true) 
+                Btn:TweenSize(UDim2.new(0.9, 0, 0, desc and 47 or 35), "Out", "Quad", 0.1, true, function() 
+                    Btn:TweenSize(UDim2.new(0.96, 0, 0, desc and 50 or 38), "Out", "Quad", 0.1, true) 
                 end) 
             end)
         end
         
         -- Create toggle
-        function Tab:CreateToggle(text, callback, default)
+        function Tab:CreateToggle(text, callback, default, desc)
             local TglFrame = Create("Frame", {
-                Size = UDim2.new(0.96, 0, 0, 38),
+                Size = UDim2.new(0.96, 0, 0, desc and 55 or 38),
                 BackgroundColor3 = Color3.fromRGB(18, 18, 18),
                 Parent = Page
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
@@ -885,14 +925,28 @@ function Library:CreateWindow(config)
                 TextColor3 = Color3.fromRGB(200, 200, 200),
                 TextXAlignment = "Left",
                 BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(12, 0),
-                Size = UDim2.new(1, -70, 1, 0),
+                Position = UDim2.fromOffset(12, desc and 10 or 0),
+                Size = UDim2.new(1, -70, desc and 18 or 38, 0),
                 Parent = TglFrame
             })
             
+            if desc then
+                Create("TextLabel", {
+                    Text = desc,
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 9,
+                    TextColor3 = Color3.fromRGB(120, 120, 120),
+                    TextXAlignment = "Left",
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(12, 28),
+                    Size = UDim2.new(1, -70, 0, 20),
+                    Parent = TglFrame
+                })
+            end
+            
             local TglBtn = Create("TextButton", {
                 Size = UDim2.fromOffset(40, 20),
-                Position = UDim2.new(1, -52, 0.5, -10),
+                Position = UDim2.new(1, -52, desc and 0.3 or 0.5, desc and -10 or -10),
                 BackgroundColor3 = default and Color3.fromRGB(200, 200, 200) or Color3.fromRGB(35, 35, 35),
                 Text = "",
                 Parent = TglFrame
@@ -916,17 +970,25 @@ function Library:CreateWindow(config)
             end)
         end
         
-        -- Create slider
-        function Tab:CreateSlider(text, min, max, default, callback)
+        -- Create slider with step support
+        function Tab:CreateSlider(config)
+            local title = config.Title or "Slider"
+            local desc = config.Desc
+            local step = config.Step or 1
+            local min = config.Value.Min or 0
+            local max = config.Value.Max or 100
+            local default = config.Value.Default or min
+            local callback = config.Callback
+            
             local SliderFrame = Create("Frame", {
-                Size = UDim2.new(0.96, 0, 0, 65),
+                Size = UDim2.new(0.96, 0, 0, desc and 75 or 65),
                 BackgroundColor3 = Color3.fromRGB(18, 18, 18),
                 Parent = Page
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
             ApplyPremiumBorder(SliderFrame, 1)
             
             Create("TextLabel", {
-                Text = text,
+                Text = title,
                 Font = Enum.Font.GothamMedium,
                 TextSize = 11,
                 TextColor3 = Color3.fromRGB(200, 200, 200),
@@ -936,6 +998,20 @@ function Library:CreateWindow(config)
                 Size = UDim2.new(1, -80, 0, 18),
                 Parent = SliderFrame
             })
+            
+            if desc then
+                Create("TextLabel", {
+                    Text = desc,
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 9,
+                    TextColor3 = Color3.fromRGB(120, 120, 120),
+                    TextXAlignment = "Left",
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(12, 28),
+                    Size = UDim2.new(1, -80, 0, 20),
+                    Parent = SliderFrame
+                })
+            end
             
             local ValueLabel = Create("TextLabel", {
                 Text = tostring(default),
@@ -950,7 +1026,7 @@ function Library:CreateWindow(config)
             
             local SliderBar = Create("Frame", {
                 Size = UDim2.new(0.9, 0, 0, 4),
-                Position = UDim2.new(0.05, 0, 0.7, 0),
+                Position = UDim2.new(0.05, 0, desc and 0.7 or 0.7, 0),
                 BackgroundColor3 = Color3.fromRGB(40, 40, 40),
                 Parent = SliderFrame
             }, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
@@ -964,11 +1040,23 @@ function Library:CreateWindow(config)
             local value = default
             local dragging = false
             
+            local function roundToStep(num)
+                return math.floor(num / step + 0.5) * step
+            end
+            
             local function update(input)
                 local pos = math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
-                value = math.floor(min + (max - min) * pos)
-                Fill.Size = UDim2.new(pos, 0, 1, 0)
-                ValueLabel.Text = tostring(value)
+                local rawValue = min + (max - min) * pos
+                value = roundToStep(rawValue)
+                value = math.clamp(value, min, max)
+                local newPos = (value - min) / (max - min)
+                Fill.Size = UDim2.new(newPos, 0, 1, 0)
+                
+                if step < 1 then
+                    ValueLabel.Text = string.format("%.2f", value)
+                else
+                    ValueLabel.Text = tostring(value)
+                end
                 if callback then callback(value) end
             end
             
@@ -992,40 +1080,109 @@ function Library:CreateWindow(config)
             end)
         end
         
-        -- Create dropdown
-        function Tab:CreateDropdown(text, options, default, callback)
+        -- Create dropdown with multi support
+        function Tab:CreateDropdown(config)
+            local title = config.Title or "Dropdown"
+            local desc = config.Desc
+            local values = config.Values or {}
+            local multi = config.Multi or false
+            local allowNone = config.AllowNone or false
+            local default = config.Value
+            local callback = config.Callback
+            
+            local selectedValues = {}
+            if multi then
+                if type(default) == "table" then
+                    selectedValues = default
+                elseif default then
+                    selectedValues = {default}
+                else
+                    selectedValues = {}
+                end
+            else
+                selectedValues = default or values[1]
+            end
+            
             local DropdownFrame = Create("Frame", {
-                Size = UDim2.new(0.96, 0, 0, 45),
+                Size = UDim2.new(0.96, 0, 0, desc and 65 or 55),
                 BackgroundColor3 = Color3.fromRGB(18, 18, 18),
                 Parent = Page
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
             ApplyPremiumBorder(DropdownFrame, 1)
             
             Create("TextLabel", {
-                Text = text,
+                Text = title,
                 Font = Enum.Font.GothamMedium,
                 TextSize = 11,
                 TextColor3 = Color3.fromRGB(200, 200, 200),
                 TextXAlignment = "Left",
                 BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(12, 0),
-                Size = UDim2.new(1, -100, 1, 0),
+                Position = UDim2.fromOffset(12, 8),
+                Size = UDim2.new(1, -100, 0, 18),
                 Parent = DropdownFrame
             })
             
+            if desc then
+                Create("TextLabel", {
+                    Text = desc,
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 9,
+                    TextColor3 = Color3.fromRGB(120, 120, 120),
+                    TextXAlignment = "Left",
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(12, 28),
+                    Size = UDim2.new(1, -100, 0, 20),
+                    Parent = DropdownFrame
+                })
+            end
+            
+            local displayText = multi and (#selectedValues > 0 and table.concat(selectedValues, ", ") or "None") or tostring(selectedValues)
             local selectedLabel = Create("TextLabel", {
-                Text = default or options[1],
+                Text = displayText,
                 Font = Enum.Font.GothamMedium,
                 TextSize = 10,
                 TextColor3 = Color3.fromRGB(180, 180, 180),
                 BackgroundColor3 = Color3.fromRGB(25, 25, 25),
-                Position = UDim2.new(1, -105, 0.5, -12),
+                Position = UDim2.new(1, -105, desc and 0.5 or 0.5, desc and -12 or -12),
                 Size = UDim2.fromOffset(95, 24),
                 Parent = DropdownFrame
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 4)})})
             
             local dropdownOpen = false
             local dropdownList = nil
+            
+            local function updateDisplay()
+                if multi then
+                    if #selectedValues == 0 then
+                        selectedLabel.Text = "None"
+                    else
+                        selectedLabel.Text = table.concat(selectedValues, ", ")
+                        if #selectedLabel.Text > 20 then
+                            selectedLabel.Text = string.sub(selectedLabel.Text, 1, 18) .. "..."
+                        end
+                    end
+                else
+                    selectedLabel.Text = tostring(selectedValues)
+                end
+            end
+            
+            local function selectOption(option)
+                if multi then
+                    local index = table.find(selectedValues, option)
+                    if index then
+                        table.remove(selectedValues, index)
+                    else
+                        table.insert(selectedValues, option)
+                    end
+                    if callback then callback(selectedValues) end
+                else
+                    selectedValues = option
+                    if callback then callback(option) end
+                    dropdownList:Destroy()
+                    dropdownOpen = false
+                end
+                updateDisplay()
+            end
             
             selectedLabel.MouseButton1Click:Connect(function()
                 if dropdownOpen then
@@ -1034,7 +1191,7 @@ function Library:CreateWindow(config)
                 else
                     dropdownList = Create("Frame", {
                         Size = UDim2.new(0.96, 0, 0, 0),
-                        Position = UDim2.fromOffset(0, 45),
+                        Position = UDim2.fromOffset(0, 55),
                         BackgroundColor3 = Color3.fromRGB(25, 25, 25),
                         Parent = DropdownFrame,
                         ClipsDescendants = true
@@ -1045,7 +1202,7 @@ function Library:CreateWindow(config)
                         Parent = dropdownList
                     })
                     
-                    for _, option in ipairs(options) do
+                    for _, option in ipairs(values) do
                         local optionBtn = Create("TextButton", {
                             Size = UDim2.new(1, 0, 0, 28),
                             BackgroundColor3 = Color3.fromRGB(30, 30, 30),
@@ -1056,53 +1213,147 @@ function Library:CreateWindow(config)
                             Parent = dropdownList
                         }, {Create("UICorner", {CornerRadius = UDim.new(0, 4)})})
                         
+                        if multi and table.find(selectedValues, option) then
+                            optionBtn.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+                            optionBtn.TextColor3 = Color3.fromRGB(20, 20, 20)
+                        end
+                        
                         optionBtn.MouseButton1Click:Connect(function()
-                            selectedLabel.Text = option
-                            if callback then callback(option) end
+                            selectOption(option)
+                            if multi then
+                                if table.find(selectedValues, option) then
+                                    optionBtn.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+                                    optionBtn.TextColor3 = Color3.fromRGB(20, 20, 20)
+                                else
+                                    optionBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                                    optionBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+                                end
+                            else
+                                dropdownList:Destroy()
+                                dropdownOpen = false
+                            end
+                        end)
+                    end
+                    
+                    if allowNone and multi then
+                        local noneBtn = Create("TextButton", {
+                            Size = UDim2.new(1, 0, 0, 28),
+                            BackgroundColor3 = Color3.fromRGB(30, 30, 30),
+                            Text = "None",
+                            TextColor3 = Color3.fromRGB(200, 200, 200),
+                            Font = Enum.Font.GothamMedium,
+                            TextSize = 10,
+                            Parent = dropdownList
+                        }, {Create("UICorner", {CornerRadius = UDim.new(0, 4)})})
+                        
+                        noneBtn.MouseButton1Click:Connect(function()
+                            selectedValues = {}
+                            if callback then callback(selectedValues) end
+                            updateDisplay()
                             dropdownList:Destroy()
                             dropdownOpen = false
                         end)
                     end
                     
-                    local height = #options * 30 + 5
+                    local height = (#values + (allowNone and multi and 1 or 0)) * 30 + 5
                     dropdownList.Size = UDim2.new(0.96, 0, 0, height)
                     dropdownOpen = true
                 end
             end)
         end
         
-        -- Create input
-        function Tab:CreateInput(text, placeholder, callback)
+        -- Create input with textarea support
+        function Tab:CreateInput(config)
+            local title = config.Title or "Input"
+            local desc = config.Desc
+            local defaultValue = config.Value or ""
+            local inputType = config.Type or "Input"
+            local placeholder = config.Placeholder or "Enter text..."
+            local inputIcon = config.InputIcon
+            local callback = config.Callback
+            
+            local height = inputType == "Textarea" and 90 or 55
+            if desc then height = height + 20 end
+            
             local InputFrame = Create("Frame", {
-                Size = UDim2.new(0.96, 0, 0, 45),
+                Size = UDim2.new(0.96, 0, 0, height),
                 BackgroundColor3 = Color3.fromRGB(18, 18, 18),
                 Parent = Page
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
             ApplyPremiumBorder(InputFrame, 1)
             
             Create("TextLabel", {
-                Text = text,
+                Text = title,
                 Font = Enum.Font.GothamMedium,
                 TextSize = 11,
                 TextColor3 = Color3.fromRGB(200, 200, 200),
                 TextXAlignment = "Left",
                 BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(12, 0),
-                Size = UDim2.new(1, -140, 1, 0),
+                Position = UDim2.fromOffset(12, 8),
+                Size = UDim2.new(1, -80, 0, 18),
                 Parent = InputFrame
             })
             
-            local inputBox = Create("TextBox", {
-                Size = UDim2.fromOffset(120, 28),
-                Position = UDim2.new(1, -132, 0.5, -14),
-                BackgroundColor3 = Color3.fromRGB(25, 25, 25),
-                PlaceholderText = placeholder or "Enter text...",
-                Text = "",
-                TextColor3 = Color3.fromRGB(200, 200, 200),
-                Font = Enum.Font.GothamMedium,
-                TextSize = 10,
-                Parent = InputFrame
-            }, {Create("UICorner", {CornerRadius = UDim.new(0, 4)})})
+            if desc then
+                Create("TextLabel", {
+                    Text = desc,
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 9,
+                    TextColor3 = Color3.fromRGB(120, 120, 120),
+                    TextXAlignment = "Left",
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(12, 28),
+                    Size = UDim2.new(1, -80, 0, 20),
+                    Parent = InputFrame
+                })
+            end
+            
+            local inputBox
+            local inputY = desc and 48 or 28
+            
+            if inputType == "Textarea" then
+                inputBox = Create("TextBox", {
+                    Size = UDim2.new(0.9, 0, 0, 50),
+                    Position = UDim2.fromOffset(12, inputY),
+                    BackgroundColor3 = Color3.fromRGB(25, 25, 25),
+                    PlaceholderText = placeholder,
+                    Text = defaultValue,
+                    TextColor3 = Color3.fromRGB(200, 200, 200),
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 10,
+                    TextWrapped = true,
+                    TextXAlignment = "Left",
+                    TextYAlignment = "Top",
+                    Parent = InputFrame
+                }, {Create("UICorner", {CornerRadius = UDim.new(0, 4)})})
+                inputBox.Size = UDim2.new(0.9, 0, 0, 50)
+            else
+                inputBox = Create("TextBox", {
+                    Size = UDim2.new(0.9, 0, 0, 32),
+                    Position = UDim2.fromOffset(12, inputY),
+                    BackgroundColor3 = Color3.fromRGB(25, 25, 25),
+                    PlaceholderText = placeholder,
+                    Text = defaultValue,
+                    TextColor3 = Color3.fromRGB(200, 200, 200),
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 10,
+                    Parent = InputFrame
+                }, {Create("UICorner", {CornerRadius = UDim.new(0, 4)})})
+            end
+            
+            if inputIcon then
+                local iconImg = LoadIcon(inputIcon, "lucide")
+                if iconImg then
+                    Create("ImageLabel", {
+                        Size = UDim2.fromOffset(14, 14),
+                        Position = UDim2.new(1, -28, inputY == 28 and 0.5 or 0.3, inputY == 28 and -7 or -5),
+                        BackgroundTransparency = 1,
+                        Image = iconImg,
+                        ImageColor3 = Color3.fromRGB(150, 150, 150),
+                        Parent = InputFrame
+                    })
+                end
+            end
             
             inputBox:GetPropertyChangedSignal("Text"):Connect(function()
                 if callback then callback(inputBox.Text) end
@@ -1136,9 +1387,9 @@ function Library:CreateWindow(config)
         end
         
         -- Create keybind
-        function Tab:CreateKeybind(text, default, callback)
+        function Tab:CreateKeybind(text, default, callback, desc)
             local KeybindFrame = Create("Frame", {
-                Size = UDim2.new(0.96, 0, 0, 45),
+                Size = UDim2.new(0.96, 0, 0, desc and 55 or 45),
                 BackgroundColor3 = Color3.fromRGB(18, 18, 18),
                 Parent = Page
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
@@ -1151,16 +1402,30 @@ function Library:CreateWindow(config)
                 TextColor3 = Color3.fromRGB(200, 200, 200),
                 TextXAlignment = "Left",
                 BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(12, 0),
-                Size = UDim2.new(1, -140, 1, 0),
+                Position = UDim2.fromOffset(12, desc and 8 or 0),
+                Size = UDim2.new(1, -140, desc and 18 or 45, 0),
                 Parent = KeybindFrame
             })
             
+            if desc then
+                Create("TextLabel", {
+                    Text = desc,
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 9,
+                    TextColor3 = Color3.fromRGB(120, 120, 120),
+                    TextXAlignment = "Left",
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(12, 28),
+                    Size = UDim2.new(1, -140, 0, 20),
+                    Parent = KeybindFrame
+                })
+            end
+            
             local keyLabel = Create("TextButton", {
                 Size = UDim2.fromOffset(100, 28),
-                Position = UDim2.new(1, -112, 0.5, -14),
+                Position = UDim2.new(1, -112, desc and 0.5 or 0.5, desc and -14 or -14),
                 BackgroundColor3 = Color3.fromRGB(25, 25, 25),
-                Text = default and tostring(default) or "None",
+                Text = default and tostring(default):gsub("Enum.KeyCode.", "") or "None",
                 TextColor3 = Color3.fromRGB(200, 200, 200),
                 Font = Enum.Font.GothamBold,
                 TextSize = 10,
@@ -1199,9 +1464,9 @@ function Library:CreateWindow(config)
         end
         
         -- Create colorpicker
-        function Tab:CreateColorPicker(text, default, callback)
+        function Tab:CreateColorPicker(text, default, callback, desc)
             local ColorFrame = Create("Frame", {
-                Size = UDim2.new(0.96, 0, 0, 45),
+                Size = UDim2.new(0.96, 0, 0, desc and 55 or 45),
                 BackgroundColor3 = Color3.fromRGB(18, 18, 18),
                 Parent = Page
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
@@ -1214,14 +1479,28 @@ function Library:CreateWindow(config)
                 TextColor3 = Color3.fromRGB(200, 200, 200),
                 TextXAlignment = "Left",
                 BackgroundTransparency = 1,
-                Position = UDim2.fromOffset(12, 0),
-                Size = UDim2.new(1, -100, 1, 0),
+                Position = UDim2.fromOffset(12, desc and 8 or 0),
+                Size = UDim2.new(1, -100, desc and 18 or 45, 0),
                 Parent = ColorFrame
             })
             
+            if desc then
+                Create("TextLabel", {
+                    Text = desc,
+                    Font = Enum.Font.GothamMedium,
+                    TextSize = 9,
+                    TextColor3 = Color3.fromRGB(120, 120, 120),
+                    TextXAlignment = "Left",
+                    BackgroundTransparency = 1,
+                    Position = UDim2.fromOffset(12, 28),
+                    Size = UDim2.new(1, -100, 0, 20),
+                    Parent = ColorFrame
+                })
+            end
+            
             local colorDisplay = Create("Frame", {
                 Size = UDim2.fromOffset(30, 30),
-                Position = UDim2.new(1, -42, 0.5, -15),
+                Position = UDim2.new(1, -42, desc and 0.5 or 0.5, desc and -15 or -15),
                 BackgroundColor3 = default or Color3.fromRGB(200, 100, 100),
                 Parent = ColorFrame
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 4)})})
@@ -1244,6 +1523,7 @@ function Library:CreateWindow(config)
                     }, {Create("UICorner", {CornerRadius = UDim.new(0, 8)})})
                     
                     local rSlider, gSlider, bSlider
+                    local currentColor = colorDisplay.BackgroundColor3
                     
                     local function updateColor()
                         local color = Color3.fromRGB(rSlider.Value, gSlider.Value, bSlider.Value)
@@ -1251,9 +1531,9 @@ function Library:CreateWindow(config)
                         if callback then callback(color) end
                     end
                     
-                    rSlider = CreateSlider(colorPicker, "R", 0, 255, default and default.R * 255 or 200, updateColor)
-                    gSlider = CreateSlider(colorPicker, "G", 0, 255, default and default.G * 255 or 100, updateColor)
-                    bSlider = CreateSlider(colorPicker, "B", 0, 255, default and default.B * 255 or 100, updateColor)
+                    rSlider = CreateSlider(colorPicker, "R", 0, 255, currentColor.R * 255, updateColor)
+                    gSlider = CreateSlider(colorPicker, "G", 0, 255, currentColor.G * 255, updateColor)
+                    bSlider = CreateSlider(colorPicker, "B", 0, 255, currentColor.B * 255, updateColor)
                     
                     colorPickerOpen = true
                 end
@@ -1293,7 +1573,7 @@ function Library:CreateWindow(config)
         
         -- Create divider
         function Tab:CreateDivider(text)
-            CreateDivider(Page, text)
+            CreateDivider(Page, text or "")
         end
         
         -- Create tag
@@ -1392,7 +1672,20 @@ local function CreateSlider(parent, label, min, max, default, callback)
         end
     end)
     
-    return sliderFrame
+    return {Value = value, setValue = function(v) 
+        value = v
+        fill.Size = UDim2.new((value - min) / (max - min), 0, 1, 0)
+        valueLabel.Text = tostring(value)
+        if callback then callback() end
+    end}
+end
+
+-- Table.find helper
+local function table.find(t, value)
+    for i, v in ipairs(t) do
+        if v == value then return i end
+    end
+    return nil
 end
 
 -- Return the library for URL loading
