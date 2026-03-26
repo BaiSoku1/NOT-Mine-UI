@@ -2,6 +2,8 @@
     PREMIUM MODERN SILVER UI (V11)
     - Style: Compact & Refined
     - Features: Button, Toggle, Slider with Input
+    - Draggable Open/Close Button
+    - Author below Title
     - Icons: BX Close & ID Open (74666642456643)
 ]]
 
@@ -74,18 +76,57 @@ function Library:CreateWindow(config)
     
     local screenGui = Create("ScreenGui", {Name = folder, ResetOnSpawn = false, Parent = (game:GetService("CoreGui") or Player:WaitForChild("PlayerGui"))})
 
+    -- Open Button (Draggable)
     local OpenButton = Create("ImageButton", {Size = UDim2.fromOffset(40, 40), Position = UDim2.new(0, 15, 0.5, -20), BackgroundColor3 = Color3.fromRGB(10, 10, 10), Image = "rbxassetid://74666642456643", Parent = screenGui}, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
     ApplyPremiumBorder(OpenButton, 2)
+    
+    -- Make Open Button Draggable
+    do
+        local dragging, dragStart, startPos
+        OpenButton.InputBegan:Connect(function(input) 
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then 
+                dragging = true
+                dragStart = input.Position
+                startPos = OpenButton.Position
+            end 
+        end)
+        UIS.InputChanged:Connect(function(input) 
+            if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then 
+                local delta = input.Position - dragStart
+                OpenButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end 
+        end)
+        UIS.InputEnded:Connect(function(input) 
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then 
+                dragging = false 
+            end 
+        end)
+    end
 
     local MainFrame = Create("Frame", {Name = "MainFrame", Size = UDim2.fromOffset(420, 280), Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Color3.fromRGB(8, 8, 8), Visible = true, Parent = screenGui}, {Create("UICorner", {CornerRadius = UDim.new(0, 10)})})
     ApplyPremiumBorder(MainFrame, 2.8)
 
-    -- Draggable
+    -- Make MainFrame Draggable
     do
         local dragging, dragStart, startPos
-        MainFrame.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = input.Position; startPos = MainFrame.Position end end)
-        UIS.InputChanged:Connect(function(input) if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then local delta = input.Position - dragStart; MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
-        UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
+        MainFrame.InputBegan:Connect(function(input) 
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then 
+                dragging = true
+                dragStart = input.Position
+                startPos = MainFrame.Position
+            end 
+        end)
+        UIS.InputChanged:Connect(function(input) 
+            if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then 
+                local delta = input.Position - dragStart
+                MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end 
+        end)
+        UIS.InputEnded:Connect(function(input) 
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then 
+                dragging = false 
+            end 
+        end)
     end
 
     OpenButton.MouseButton1Click:Connect(function()
@@ -93,20 +134,67 @@ function Library:CreateWindow(config)
         if MainFrame.Visible then MainFrame:TweenSize(UDim2.fromOffset(420, 280), "Out", "Back", 0.4, true) end
     end)
 
-    local TopBar = Create("Frame", {Size = UDim2.new(1, 0, 0, 35), BackgroundTransparency = 1, Parent = MainFrame})
+    -- Top Bar with Title
+    local TopBar = Create("Frame", {Size = UDim2.new(1, 0, 0, 45), BackgroundTransparency = 1, Parent = MainFrame})
     
-    local titleWithAuthor = titleText:upper()
+    -- Title
+    Create("TextLabel", {Text = titleText:upper(), Font = Enum.Font.GothamBold, TextSize = 14, TextColor3 = Color3.fromRGB(230, 230, 230), TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(12, 8), Size = UDim2.new(1, -60, 0, 18), Parent = TopBar})
+    
+    -- Author (below title)
     if author ~= "" then
-        titleWithAuthor = titleText:upper() .. " | " .. author
+        Create("TextLabel", {Text = author, Font = Enum.Font.GothamMedium, TextSize = 9, TextColor3 = Color3.fromRGB(150, 150, 150), TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(12, 26), Size = UDim2.new(1, -60, 0, 14), Parent = TopBar})
     end
     
-    Create("TextLabel", {Text = titleWithAuthor, Font = Enum.Font.GothamBold, TextSize = 12, TextColor3 = Color3.fromRGB(230, 230, 230), TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(12, 0), Size = UDim2.new(1, -60, 1, 0), Parent = TopBar})
+    -- Close Button
+    local CloseBtn = Create("ImageButton", {Size = UDim2.fromOffset(24, 24), Position = UDim2.new(1, -34, 0, 10), BackgroundTransparency = 1, Image = "rbxassetid://74666642456643", ImageColor3 = Color3.fromRGB(200, 200, 200), Parent = TopBar})
     
-    local CloseBtn = Create("ImageButton", {Size = UDim2.fromOffset(20, 20), Position = UDim2.new(1, -30, 0, 8), BackgroundTransparency = 1, Image = "rbxassetid://74666642456643", ImageColor3 = Color3.fromRGB(200, 200, 200), Parent = TopBar})
-    CloseBtn.MouseButton1Click:Connect(function() MainFrame:TweenSize(UDim2.fromOffset(0, 0), "In", "Back", 0.3, true, function() MainFrame.Visible = false end) end)
+    -- Make Close Button Draggable (separate from click)
+    do
+        local dragging, dragStart, startPos
+        CloseBtn.InputBegan:Connect(function(input) 
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then 
+                dragging = true
+                dragStart = input.Position
+                startPos = MainFrame.Position
+            end 
+        end)
+        UIS.InputChanged:Connect(function(input) 
+            if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then 
+                local delta = input.Position - dragStart
+                MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end 
+        end)
+        UIS.InputEnded:Connect(function(input) 
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then 
+                dragging = false 
+            end 
+        end)
+    end
+    
+    -- Close button click (different from drag)
+    local isDraggingClose = false
+    CloseBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDraggingClose = false
+            task.delay(0.1, function()
+                if not isDraggingClose then
+                    -- This is a click, not a drag
+                    MainFrame:TweenSize(UDim2.fromOffset(0, 0), "In", "Back", 0.3, true, function() 
+                        MainFrame.Visible = false 
+                    end)
+                end
+            end)
+        end
+    end)
+    
+    CloseBtn.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            isDraggingClose = true
+        end
+    end)
 
     -- Sidebar
-    local Sidebar = Create("Frame", {Size = UDim2.new(0, 110, 1, -55), Position = UDim2.fromOffset(10, 45), BackgroundColor3 = Color3.fromRGB(12, 12, 12), Parent = MainFrame}, {
+    local Sidebar = Create("Frame", {Size = UDim2.new(0, 110, 1, -55), Position = UDim2.fromOffset(10, 55), BackgroundColor3 = Color3.fromRGB(12, 12, 12), Parent = MainFrame}, {
         Create("UICorner", {CornerRadius = UDim.new(0, 8)}),
         Create("UIListLayout", {Padding = UDim.new(0, 6), HorizontalAlignment = "Center"}),
         Create("UIPadding", {PaddingTop = UDim.new(0, 8)})
@@ -114,7 +202,7 @@ function Library:CreateWindow(config)
     ApplyPremiumBorder(Sidebar, 1.2)
 
     -- Container
-    local Container = Create("Frame", {Size = UDim2.new(1, -140, 1, -55), Position = UDim2.fromOffset(130, 45), BackgroundTransparency = 1, Parent = MainFrame})
+    local Container = Create("Frame", {Size = UDim2.new(1, -140, 1, -55), Position = UDim2.fromOffset(130, 55), BackgroundTransparency = 1, Parent = MainFrame})
 
     local Window = {}
     local firstTab = true
@@ -183,14 +271,11 @@ function Library:CreateWindow(config)
             local default = config.Default or 50
             local callback = config.Callback or function() end
             
-            -- Slider Container
             local SliderFrame = Create("Frame", {Size = UDim2.new(0.96, 0, 0, 70), BackgroundColor3 = Color3.fromRGB(18, 18, 18), Parent = Page}, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
             ApplyPremiumBorder(SliderFrame, 1)
             
-            -- Title
             Create("TextLabel", {Text = text, Font = Enum.Font.GothamMedium, TextSize = 11, TextColor3 = Color3.fromRGB(200, 200, 200), TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(10, 8), Size = UDim2.new(1, -80, 0, 15), Parent = SliderFrame})
             
-            -- Value Input Box
             local InputBox = Create("TextBox", {
                 Size = UDim2.fromOffset(45, 25),
                 Position = UDim2.new(1, -55, 0, 5),
@@ -200,12 +285,10 @@ function Library:CreateWindow(config)
                 Font = Enum.Font.GothamBold,
                 TextSize = 11,
                 TextXAlignment = "Center",
-                PlaceholderText = "",
                 ClearTextOnFocus = false,
                 Parent = SliderFrame
             }, {Create("UICorner", {CornerRadius = UDim.new(0, 4)})})
             
-            -- Slider Bar
             local SliderBar = Create("Frame", {
                 Size = UDim2.new(0.9, 0, 0, 4),
                 Position = UDim2.fromOffset(10, 45),
@@ -219,7 +302,6 @@ function Library:CreateWindow(config)
                 Parent = SliderBar
             }, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
             
-            -- Value Display (angka di kanan slider)
             local ValueDisplay = Create("TextLabel", {
                 Text = tostring(default),
                 Font = Enum.Font.GothamBold,
@@ -260,7 +342,6 @@ function Library:CreateWindow(config)
                 callback(value)
             end
             
-            -- Slider Drag
             SliderBar.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then
                     dragging = true
@@ -280,12 +361,10 @@ function Library:CreateWindow(config)
                 end
             end)
             
-            -- Input Box Focus
             InputBox.FocusLost:Connect(function(enterPressed)
                 updateValueFromInput(InputBox.Text)
             end)
             
-            -- Click on Slider Bar langsung
             SliderBar.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then
                     updateValueFromSlider(input)
