@@ -1,8 +1,8 @@
 --[[ 
     PREMIUM MODERN SILVER UI (V11)
     - Style: Compact & Refined
-    - Format: UI:CreateWindow({...})
-    - Method: Window:Tab({Title = ""})
+    - Features: Button, Toggle, Slider with Input
+    - Icons: BX Close & ID Open (74666642456643)
 ]]
 
 local UIS = game:GetService("UserInputService")
@@ -95,7 +95,6 @@ function Library:CreateWindow(config)
 
     local TopBar = Create("Frame", {Size = UDim2.new(1, 0, 0, 35), BackgroundTransparency = 1, Parent = MainFrame})
     
-    -- Title with Author
     local titleWithAuthor = titleText:upper()
     if author ~= "" then
         titleWithAuthor = titleText:upper() .. " | " .. author
@@ -106,7 +105,7 @@ function Library:CreateWindow(config)
     local CloseBtn = Create("ImageButton", {Size = UDim2.fromOffset(20, 20), Position = UDim2.new(1, -30, 0, 8), BackgroundTransparency = 1, Image = "rbxassetid://74666642456643", ImageColor3 = Color3.fromRGB(200, 200, 200), Parent = TopBar})
     CloseBtn.MouseButton1Click:Connect(function() MainFrame:TweenSize(UDim2.fromOffset(0, 0), "In", "Back", 0.3, true, function() MainFrame.Visible = false end) end)
 
-    -- Sidebar with Padding
+    -- Sidebar
     local Sidebar = Create("Frame", {Size = UDim2.new(0, 110, 1, -55), Position = UDim2.fromOffset(10, 45), BackgroundColor3 = Color3.fromRGB(12, 12, 12), Parent = MainFrame}, {
         Create("UICorner", {CornerRadius = UDim.new(0, 8)}),
         Create("UIListLayout", {Padding = UDim.new(0, 6), HorizontalAlignment = "Center"}),
@@ -114,11 +113,10 @@ function Library:CreateWindow(config)
     })
     ApplyPremiumBorder(Sidebar, 1.2)
 
-    -- Container with Padding
+    -- Container
     local Container = Create("Frame", {Size = UDim2.new(1, -140, 1, -55), Position = UDim2.fromOffset(130, 45), BackgroundTransparency = 1, Parent = MainFrame})
 
     local Window = {}
-    local tabs = {}
     local firstTab = true
 
     function Window:Tab(tabConfig)
@@ -178,7 +176,6 @@ function Library:CreateWindow(config)
         end
 
         function Tab:Slider(config)
-            -- Optional: Add slider functionality
             config = config or {}
             local text = config.Text or "Slider"
             local min = config.Min or 0
@@ -186,44 +183,112 @@ function Library:CreateWindow(config)
             local default = config.Default or 50
             local callback = config.Callback or function() end
             
-            local SliderFrame = Create("Frame", {Size = UDim2.new(0.96, 0, 0, 55), BackgroundColor3 = Color3.fromRGB(18, 18, 18), Parent = Page}, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
+            -- Slider Container
+            local SliderFrame = Create("Frame", {Size = UDim2.new(0.96, 0, 0, 70), BackgroundColor3 = Color3.fromRGB(18, 18, 18), Parent = Page}, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
             ApplyPremiumBorder(SliderFrame, 1)
             
-            Create("TextLabel", {Text = text, Font = Enum.Font.GothamMedium, TextSize = 11, TextColor3 = Color3.fromRGB(200, 200, 200), TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(10, 8), Size = UDim2.new(1, -60, 0, 15), Parent = SliderFrame})
+            -- Title
+            Create("TextLabel", {Text = text, Font = Enum.Font.GothamMedium, TextSize = 11, TextColor3 = Color3.fromRGB(200, 200, 200), TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(10, 8), Size = UDim2.new(1, -80, 0, 15), Parent = SliderFrame})
             
-            local ValueLabel = Create("TextLabel", {Text = tostring(default), Font = Enum.Font.GothamBold, TextSize = 11, TextColor3 = Color3.fromRGB(220, 220, 220), TextXAlignment = "Right", BackgroundTransparency = 1, Position = UDim2.new(1, -50, 0, 8), Size = UDim2.new(0, 40, 0, 15), Parent = SliderFrame})
+            -- Value Input Box
+            local InputBox = Create("TextBox", {
+                Size = UDim2.fromOffset(45, 25),
+                Position = UDim2.new(1, -55, 0, 5),
+                BackgroundColor3 = Color3.fromRGB(35, 35, 35),
+                Text = tostring(default),
+                TextColor3 = Color3.fromRGB(220, 220, 220),
+                Font = Enum.Font.GothamBold,
+                TextSize = 11,
+                TextXAlignment = "Center",
+                PlaceholderText = "",
+                ClearTextOnFocus = false,
+                Parent = SliderFrame
+            }, {Create("UICorner", {CornerRadius = UDim.new(0, 4)})})
             
-            local SliderBar = Create("Frame", {Size = UDim2.new(0.9, 0, 0, 4), Position = UDim2.fromOffset(10, 35), BackgroundColor3 = Color3.fromRGB(40, 40, 40), Parent = SliderFrame}, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
-            local FillBar = Create("Frame", {Size = UDim2.new((default - min) / (max - min), 0, 1, 0), BackgroundColor3 = Color3.fromRGB(200, 200, 200), Parent = SliderBar}, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
+            -- Slider Bar
+            local SliderBar = Create("Frame", {
+                Size = UDim2.new(0.9, 0, 0, 4),
+                Position = UDim2.fromOffset(10, 45),
+                BackgroundColor3 = Color3.fromRGB(40, 40, 40),
+                Parent = SliderFrame
+            }, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
+            
+            local FillBar = Create("Frame", {
+                Size = UDim2.new((default - min) / (max - min), 0, 1, 0),
+                BackgroundColor3 = Color3.fromRGB(200, 200, 200),
+                Parent = SliderBar
+            }, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
+            
+            -- Value Display (angka di kanan slider)
+            local ValueDisplay = Create("TextLabel", {
+                Text = tostring(default),
+                Font = Enum.Font.GothamBold,
+                TextSize = 11,
+                TextColor3 = Color3.fromRGB(220, 220, 220),
+                TextXAlignment = "Right",
+                BackgroundTransparency = 1,
+                Position = UDim2.new(1, -10, 0, 32),
+                Size = UDim2.fromOffset(40, 15),
+                Parent = SliderFrame
+            })
             
             local dragging = false
             local value = default
             
-            local function updateValue(input)
+            local function updateValueFromInput(newValue)
+                local num = tonumber(newValue)
+                if num then
+                    value = math.clamp(num, min, max)
+                    value = math.floor(value)
+                    local percent = (value - min) / (max - min)
+                    FillBar.Size = UDim2.new(percent, 0, 1, 0)
+                    InputBox.Text = tostring(value)
+                    ValueDisplay.Text = tostring(value)
+                    callback(value)
+                else
+                    InputBox.Text = tostring(value)
+                end
+            end
+            
+            local function updateValueFromSlider(input)
                 local relativeX = math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
                 value = min + (max - min) * relativeX
                 value = math.floor(value)
                 FillBar.Size = UDim2.new(relativeX, 0, 1, 0)
-                ValueLabel.Text = tostring(value)
+                InputBox.Text = tostring(value)
+                ValueDisplay.Text = tostring(value)
                 callback(value)
             end
             
+            -- Slider Drag
             SliderBar.InputBegan:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then
                     dragging = true
-                    updateValue(input)
+                    updateValueFromSlider(input)
                 end
             end)
             
             UIS.InputChanged:Connect(function(input)
                 if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                    updateValue(input)
+                    updateValueFromSlider(input)
                 end
             end)
             
             UIS.InputEnded:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then
                     dragging = false
+                end
+            end)
+            
+            -- Input Box Focus
+            InputBox.FocusLost:Connect(function(enterPressed)
+                updateValueFromInput(InputBox.Text)
+            end)
+            
+            -- Click on Slider Bar langsung
+            SliderBar.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    updateValueFromSlider(input)
                 end
             end)
         end
