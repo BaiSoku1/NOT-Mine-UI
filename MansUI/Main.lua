@@ -1,29 +1,12 @@
-local MansLibrary = {}
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
+local UIS = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
-local UIS = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
 
-local KeySystem = {
-	ValidKeys = {},
-	IsUnlocked = false,
-	CurrentKey = nil,
-	Verified = false,
-	KeyCheckURL = nil,
-	UseWebhook = false,
-	WebhookURL = nil
-}
+local Library = {}
 
-local function Create(class, props, children)
-	local obj = Instance.new(class)
-	for k,v in pairs(props or {}) do obj[k] = v end
-	for _,c in pairs(children or {}) do c.Parent = obj end
-	return obj
-end
-
-MansLibrary.Icons = {
+Library.Icons = {
 	home = "🏠", settings = "⚙️", gear = "⚙️", menu = "📋", search = "🔍", close = "❌",
 	back = "◀️", forward = "▶️", up = "⬆️", down = "⬇️", refresh = "🔄", check = "✅",
 	tick = "✅", cross = "❌", plus = "➕", minus = "➖", star = "⭐", heart = "❤️",
@@ -83,20 +66,42 @@ MansLibrary.Icons = {
 	jumpboost = "🦘", gravity = "🌎", tp2 = "🌀", steal = "👤", invis = "👻", wallhack = "🧱",
 }
 
+local Themes = {}
 Themes.Colors = {
 	Dark = { Background = Color3.fromRGB(8, 8, 8), Secondary = Color3.fromRGB(18, 18, 18), Sidebar = Color3.fromRGB(12, 12, 12), Accent = Color3.fromRGB(220, 220, 220), Text = Color3.fromRGB(230, 230, 230), TextSecondary = Color3.fromRGB(180, 180, 180), Button = Color3.fromRGB(18, 18, 18) },
 	Silver = { Background = Color3.fromRGB(25, 25, 35), Secondary = Color3.fromRGB(35, 35, 45), Sidebar = Color3.fromRGB(30, 30, 40), Accent = Color3.fromRGB(192, 192, 192), Text = Color3.fromRGB(220, 220, 240), TextSecondary = Color3.fromRGB(160, 160, 180), Button = Color3.fromRGB(35, 35, 45) },
 	Gold = { Background = Color3.fromRGB(20, 15, 8), Secondary = Color3.fromRGB(35, 25, 12), Sidebar = Color3.fromRGB(25, 18, 10), Accent = Color3.fromRGB(255, 215, 0), Text = Color3.fromRGB(255, 235, 150), TextSecondary = Color3.fromRGB(200, 170, 80), Button = Color3.fromRGB(35, 25, 12) },
 	Blue = { Background = Color3.fromRGB(8, 15, 30), Secondary = Color3.fromRGB(15, 25, 45), Sidebar = Color3.fromRGB(10, 18, 35), Accent = Color3.fromRGB(80, 150, 255), Text = Color3.fromRGB(180, 210, 255), TextSecondary = Color3.fromRGB(120, 150, 200), Button = Color3.fromRGB(15, 25, 45) },
-	Purple = { Background = Color3.fromRGB(20, 10, 30), Secondary = Color3.fromRGB(35, 20, 45), Sidebar = Color3.fromRGB(25, 12, 35), Accent = Color3.fromRGB(160, 100, 220), Text = Color3.fromRGB(210, 180, 240), TextSecondary = Color3.fromRGB(150, 120, 190), Button = Color3.fromRGB(35, 20, 45) },
 	Forest = { Background = Color3.fromRGB(10, 25, 10), Secondary = Color3.fromRGB(20, 40, 20), Sidebar = Color3.fromRGB(15, 30, 15), Accent = Color3.fromRGB(80, 200, 80), Text = Color3.fromRGB(180, 230, 180), TextSecondary = Color3.fromRGB(120, 170, 120), Button = Color3.fromRGB(20, 40, 20) },
 	Rose = { Background = Color3.fromRGB(30, 15, 20), Secondary = Color3.fromRGB(45, 25, 35), Sidebar = Color3.fromRGB(35, 18, 25), Accent = Color3.fromRGB(255, 100, 150), Text = Color3.fromRGB(255, 200, 210), TextSecondary = Color3.fromRGB(200, 130, 150), Button = Color3.fromRGB(45, 25, 35) },
+	Purple = { Background = Color3.fromRGB(20, 10, 30), Secondary = Color3.fromRGB(35, 20, 45), Sidebar = Color3.fromRGB(25, 12, 35), Accent = Color3.fromRGB(160, 100, 220), Text = Color3.fromRGB(210, 180, 240), TextSecondary = Color3.fromRGB(150, 120, 190), Button = Color3.fromRGB(35, 20, 45) },
 	Orange = { Background = Color3.fromRGB(30, 18, 8), Secondary = Color3.fromRGB(50, 30, 12), Sidebar = Color3.fromRGB(35, 20, 10), Accent = Color3.fromRGB(255, 140, 50), Text = Color3.fromRGB(255, 210, 150), TextSecondary = Color3.fromRGB(200, 150, 90), Button = Color3.fromRGB(50, 30, 12) },
 	Pink = { Background = Color3.fromRGB(35, 12, 25), Secondary = Color3.fromRGB(55, 20, 40), Sidebar = Color3.fromRGB(40, 14, 28), Accent = Color3.fromRGB(255, 100, 200), Text = Color3.fromRGB(255, 180, 220), TextSecondary = Color3.fromRGB(200, 120, 170), Button = Color3.fromRGB(55, 20, 40) },
 	Cyber = { Background = Color3.fromRGB(8, 8, 20), Secondary = Color3.fromRGB(15, 15, 35), Sidebar = Color3.fromRGB(10, 10, 25), Accent = Color3.fromRGB(0, 255, 255), Text = Color3.fromRGB(0, 255, 200), TextSecondary = Color3.fromRGB(0, 180, 150), Button = Color3.fromRGB(15, 15, 35) },
+	Midnight = { Background = Color3.fromRGB(10, 10, 20), Secondary = Color3.fromRGB(20, 20, 35), Sidebar = Color3.fromRGB(15, 15, 25), Accent = Color3.fromRGB(100, 100, 200), Text = Color3.fromRGB(200, 200, 255), TextSecondary = Color3.fromRGB(150, 150, 200), Button = Color3.fromRGB(20, 20, 35) },
+	Ocean = { Background = Color3.fromRGB(8, 20, 35), Secondary = Color3.fromRGB(15, 30, 50), Sidebar = Color3.fromRGB(10, 22, 40), Accent = Color3.fromRGB(80, 180, 255), Text = Color3.fromRGB(180, 220, 255), TextSecondary = Color3.fromRGB(120, 160, 210), Button = Color3.fromRGB(15, 30, 50) },
+	Violet = { Background = Color3.fromRGB(20, 8, 35), Secondary = Color3.fromRGB(35, 15, 55), Sidebar = Color3.fromRGB(25, 10, 40), Accent = Color3.fromRGB(180, 80, 240), Text = Color3.fromRGB(220, 170, 255), TextSecondary = Color3.fromRGB(160, 110, 210), Button = Color3.fromRGB(35, 15, 55) },
+	Crimson = { Background = Color3.fromRGB(30, 8, 8), Secondary = Color3.fromRGB(50, 15, 15), Sidebar = Color3.fromRGB(40, 10, 10), Accent = Color3.fromRGB(220, 60, 60), Text = Color3.fromRGB(255, 180, 180), TextSecondary = Color3.fromRGB(200, 120, 120), Button = Color3.fromRGB(50, 15, 15) },
+	Emerald = { Background = Color3.fromRGB(8, 25, 20), Secondary = Color3.fromRGB(15, 40, 30), Sidebar = Color3.fromRGB(10, 30, 22), Accent = Color3.fromRGB(80, 220, 150), Text = Color3.fromRGB(170, 240, 210), TextSecondary = Color3.fromRGB(110, 180, 140), Button = Color3.fromRGB(15, 40, 30) },
+	Amber = { Background = Color3.fromRGB(30, 20, 8), Secondary = Color3.fromRGB(50, 35, 12), Sidebar = Color3.fromRGB(38, 25, 10), Accent = Color3.fromRGB(255, 180, 60), Text = Color3.fromRGB(255, 220, 140), TextSecondary = Color3.fromRGB(210, 170, 80), Button = Color3.fromRGB(50, 35, 12) },
+	Lavender = { Background = Color3.fromRGB(25, 15, 40), Secondary = Color3.fromRGB(40, 25, 60), Sidebar = Color3.fromRGB(30, 18, 45), Accent = Color3.fromRGB(200, 150, 255), Text = Color3.fromRGB(230, 200, 255), TextSecondary = Color3.fromRGB(170, 130, 210), Button = Color3.fromRGB(40, 25, 60) },
+	Sky = { Background = Color3.fromRGB(10, 20, 40), Secondary = Color3.fromRGB(20, 35, 60), Sidebar = Color3.fromRGB(12, 25, 48), Accent = Color3.fromRGB(100, 200, 255), Text = Color3.fromRGB(200, 230, 255), TextSecondary = Color3.fromRGB(140, 170, 210), Button = Color3.fromRGB(20, 35, 60) },
+	Bubblegum = { Background = Color3.fromRGB(45, 20, 40), Secondary = Color3.fromRGB(70, 30, 60), Sidebar = Color3.fromRGB(55, 22, 48), Accent = Color3.fromRGB(255, 120, 220), Text = Color3.fromRGB(255, 200, 240), TextSecondary = Color3.fromRGB(210, 140, 190), Button = Color3.fromRGB(70, 30, 60) },
+	Sunset = { Background = Color3.fromRGB(35, 15, 25), Secondary = Color3.fromRGB(55, 25, 40), Sidebar = Color3.fromRGB(42, 18, 30), Accent = Color3.fromRGB(255, 100, 80), Text = Color3.fromRGB(255, 180, 160), TextSecondary = Color3.fromRGB(210, 130, 110), Button = Color3.fromRGB(55, 25, 40) },
+	Mint = { Background = Color3.fromRGB(15, 30, 25), Secondary = Color3.fromRGB(25, 50, 40), Sidebar = Color3.fromRGB(18, 38, 30), Accent = Color3.fromRGB(100, 220, 180), Text = Color3.fromRGB(180, 240, 220), TextSecondary = Color3.fromRGB(120, 190, 160), Button = Color3.fromRGB(25, 50, 40) },
+	Coffee = { Background = Color3.fromRGB(25, 18, 12), Secondary = Color3.fromRGB(40, 28, 18), Sidebar = Color3.fromRGB(30, 22, 14), Accent = Color3.fromRGB(180, 120, 80), Text = Color3.fromRGB(220, 180, 140), TextSecondary = Color3.fromRGB(160, 120, 90), Button = Color3.fromRGB(40, 28, 18) },
+	Galaxy = { Background = Color3.fromRGB(12, 8, 25), Secondary = Color3.fromRGB(22, 15, 40), Sidebar = Color3.fromRGB(16, 10, 30), Accent = Color3.fromRGB(180, 100, 255), Text = Color3.fromRGB(220, 180, 255), TextSecondary = Color3.fromRGB(160, 120, 210), Button = Color3.fromRGB(22, 15, 40) },
+	Neon = { Background = Color3.fromRGB(8, 8, 8), Secondary = Color3.fromRGB(18, 18, 18), Sidebar = Color3.fromRGB(12, 12, 12), Accent = Color3.fromRGB(0, 255, 100), Text = Color3.fromRGB(0, 255, 150), TextSecondary = Color3.fromRGB(100, 255, 150), Button = Color3.fromRGB(18, 18, 18) },
 }
 
-MansLibrary.ThemeList = {"Dark", "Silver", "Gold", "Blue", "Purple", "Forest", "Rose", "Orange", "Pink", "Cyber"}
+Library.ThemeList = {"Dark","Silver","Gold","Blue","Forest","Rose","Purple","Orange","Pink","Cyber","Midnight","Ocean","Violet","Crimson","Emerald","Amber","Lavender","Sky","Bubblegum","Sunset","Mint","Coffee","Galaxy","Neon"}
+
+local function Create(class, props, children)
+	local obj = Instance.new(class)
+	for k,v in pairs(props or {}) do obj[k] = v end
+	for _,c in pairs(children or {}) do c.Parent = obj end
+	return obj
+end
 
 local function ApplyPremiumBorder(parent, thickness, themeColor)
 	local borderColor = themeColor or Color3.fromRGB(255, 255, 255)
@@ -110,10 +115,10 @@ local function ApplyPremiumBorder(parent, thickness, themeColor)
 	return stroke
 end
 
-function MansLibrary:Notify(title, content, duration, icon)
+function Library:Notify(title, content, duration, icon)
 	local icon = icon or "📢"
 	local duration = duration or 5
-	local NotifGui = Player:WaitForChild("PlayerGui"):FindFirstChild("MansNotifs") or Create("ScreenGui", {Name = "MansNotifs", Parent = (game:GetService("CoreGui") or Player:WaitForChild("PlayerGui"))})
+	local NotifGui = Player:WaitForChild("PlayerGui"):FindFirstChild("ModernNotifs") or Create("ScreenGui", {Name = "ModernNotifs", Parent = (game:GetService("CoreGui") or Player:WaitForChild("PlayerGui"))})
 	local Holder = NotifGui:FindFirstChild("Holder") or Create("Frame", {Name = "Holder", Size = UDim2.new(0, 220, 1, -20), Position = UDim2.new(1, -230, 0, 10), BackgroundTransparency = 1, Parent = NotifGui}, {Create("UIListLayout", {VerticalAlignment = "Bottom", Padding = UDim.new(0, 8), HorizontalAlignment = "Right"})})
 	local Notif = Create("Frame", {Size = UDim2.new(1, 0, 0, 60), BackgroundColor3 = Color3.fromRGB(10, 10, 10), Parent = Holder}, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
 	ApplyPremiumBorder(Notif, 2)
@@ -127,187 +132,12 @@ function MansLibrary:Notify(title, content, duration, icon)
 	end)
 end
 
-function MansLibrary:SetupKeySystem(config)
+function Library:CreateWindow(config)
 	config = config or {}
-	KeySystem.ValidKeys = config.Keys or {}
-	KeySystem.KeyCheckURL = config.KeyCheckURL
-	KeySystem.UseWebhook = config.UseWebhook or false
-	KeySystem.WebhookURL = config.WebhookURL
-	KeySystem.OnVerified = config.OnVerified or function() end
-	KeySystem.OnFailed = config.OnFailed or function() end
-end
-
-function MansLibrary:AddValidKey(key)
-	table.insert(KeySystem.ValidKeys, key)
-end
-
-function MansLibrary:VerifyKey(key)
-	for _, validKey in ipairs(KeySystem.ValidKeys) do
-		if key == validKey then
-			KeySystem.IsUnlocked = true
-			KeySystem.CurrentKey = key
-			KeySystem.Verified = true
-			if KeySystem.UseWebhook and KeySystem.WebhookURL then
-				spawn(function()
-					local data = {
-						content = "✅ **KEY VERIFIED!**\nUser: " .. Player.Name .. "\nKey: `" .. key .. "`\nTime: " .. os.date("%Y-%m-%d %H:%M:%S")
-					}
-					HttpService:PostAsync(KeySystem.WebhookURL, HttpService:JSONEncode(data))
-				end)
-			end
-			if KeySystem.OnVerified then KeySystem.OnVerified(key) end
-			return true
-		end
-	end
-	if KeySystem.UseWebhook and KeySystem.WebhookURL then
-		spawn(function()
-			local data = {
-				content = "❌ **INVALID KEY!**\nUser: " .. Player.Name .. "\nKey Attempt: `" .. key .. "`\nTime: " .. os.date("%Y-%m-%d %H:%M:%S")
-			}
-			HttpService:PostAsync(KeySystem.WebhookURL, HttpService:JSONEncode(data))
-		end)
-	end
-	if KeySystem.OnFailed then KeySystem.OnFailed(key) end
-	return false
-end
-
-function MansLibrary:CheckKeyOnline(key, callback)
-	if not KeySystem.KeyCheckURL then
-		if callback then callback(false) end
-		return false
-	end
-	spawn(function()
-		local success, response = pcall(function()
-			return HttpService:GetAsync(KeySystem.KeyCheckURL .. "?key=" .. HttpService:URLEncode(key) .. "&user=" .. HttpService:URLEncode(Player.Name))
-		end)
-		if success then
-			local isValid = response and string.find(response:lower(), "valid") or string.find(response:lower(), "true") or string.find(response:lower(), "success")
-			if isValid then
-				KeySystem.IsUnlocked = true
-				KeySystem.CurrentKey = key
-				KeySystem.Verified = true
-				if KeySystem.OnVerified then KeySystem.OnVerified(key) end
-				if callback then callback(true) end
-			else
-				if KeySystem.OnFailed then KeySystem.OnFailed(key) end
-				if callback then callback(false) end
-			end
-		else
-			if KeySystem.OnFailed then KeySystem.OnFailed(key) end
-			if callback then callback(false) end
-		end
-	end)
-	return true
-end
-
-function MansLibrary:IsUnlocked()
-	return KeySystem.IsUnlocked
-end
-
-function MansLibrary:CreateKeyWindow(config)
-	config = config or {}
-	local titleText = config.Title or "MANS LIBRARY"
-	local subtitle = config.Subtitle or "Enter Your Key"
-	local errorMessage = config.ErrorMessage or "Invalid Key!"
-	local successMessage = config.SuccessMessage or "Key Verified!"
-	local currentTheme = config.Theme or "Silver"
-	
-	local screenGui = Create("ScreenGui", {Name = "MansKeySystem", ResetOnSpawn = false, Parent = (game:GetService("CoreGui") or Player:WaitForChild("PlayerGui"))})
-	local MainFrame = Create("Frame", {Size = UDim2.fromOffset(380, 280), Position = UDim2.fromScale(0.5, 0.5), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Themes.Colors[currentTheme].Background, Visible = true, Parent = screenGui}, {Create("UICorner", {CornerRadius = UDim.new(0, 12)})})
-	ApplyPremiumBorder(MainFrame, 2.5, Themes.Colors[currentTheme].Accent)
-	
-	do
-		local dragging, dragStart, startPos
-		MainFrame.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true dragStart = input.Position startPos = MainFrame.Position end end)
-		UIS.InputChanged:Connect(function(input) if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then local delta = input.Position - dragStart MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y) end end)
-		UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
-	end
-	
-	Create("TextLabel", {Text = MansLibrary.Icons.diamond .. " " .. titleText:upper(), Font = Enum.Font.GothamBold, TextSize = 18, TextColor3 = Themes.Colors[currentTheme].Text, Position = UDim2.fromScale(0.5, 0.2), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, Parent = MainFrame})
-	Create("TextLabel", {Text = subtitle, Font = Enum.Font.GothamMedium, TextSize = 11, TextColor3 = Themes.Colors[currentTheme].TextSecondary, Position = UDim2.fromScale(0.5, 0.35), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, Parent = MainFrame})
-	
-	local KeyInput = Create("TextBox", {
-		Size = UDim2.fromOffset(260, 40), Position = UDim2.fromScale(0.5, 0.55), AnchorPoint = Vector2.new(0.5, 0.5),
-		BackgroundColor3 = Themes.Colors[currentTheme].Button, Text = "", PlaceholderText = "Enter your key here...",
-		TextColor3 = Themes.Colors[currentTheme].Text, PlaceholderColor3 = Themes.Colors[currentTheme].TextSecondary,
-		Font = Enum.Font.GothamMedium, TextSize = 12, TextXAlignment = "Left", ClearTextOnFocus = true, Parent = MainFrame
-	}, {Create("UICorner", {CornerRadius = UDim.new(0, 8)}), Create("UIPadding", {PaddingLeft = UDim.new(0, 12)})})
-	ApplyPremiumBorder(KeyInput, 1, Themes.Colors[currentTheme].Accent)
-	
-	local StatusLabel = Create("TextLabel", {Text = "", Font = Enum.Font.GothamMedium, TextSize = 10, TextColor3 = Themes.Colors[currentTheme].TextSecondary, Position = UDim2.fromScale(0.5, 0.72), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundTransparency = 1, Parent = MainFrame})
-	
-	local VerifyBtn = Create("TextButton", {Size = UDim2.fromOffset(120, 38), Position = UDim2.fromScale(0.5, 0.85), AnchorPoint = Vector2.new(0.5, 0.5), BackgroundColor3 = Themes.Colors[currentTheme].Accent, Text = MansLibrary.Icons.key .. " VERIFY", TextColor3 = Themes.Colors[currentTheme].Background, Font = Enum.Font.GothamBold, TextSize = 12, Parent = MainFrame}, {Create("UICorner", {CornerRadius = UDim.new(0, 8)})})
-	
-	local function VerifyKey()
-		local key = KeyInput.Text
-		if key == "" then
-			StatusLabel.Text = MansLibrary.Icons.warning .. " Please enter a key!"
-			StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-			return
-		end
-		StatusLabel.Text = MansLibrary.Icons.loading .. " Verifying..."
-		StatusLabel.TextColor3 = Themes.Colors[currentTheme].TextSecondary
-		VerifyBtn.Text = MansLibrary.Icons.loading .. " VERIFYING"
-		VerifyBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-		
-		task.wait(0.5)
-		
-		local verified = false
-		if KeySystem.KeyCheckURL then
-			local success = false
-			spawn(function()
-				local result = MansLibrary:CheckKeyOnline(key, function(isValid)
-					success = isValid
-				end)
-			end)
-			task.wait(1)
-			verified = success
-		else
-			verified = MansLibrary:VerifyKey(key)
-		end
-		
-		if verified then
-			StatusLabel.Text = MansLibrary.Icons.success .. " " .. successMessage
-			StatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-			VerifyBtn.Text = MansLibrary.Icons.check .. " VERIFIED"
-			task.delay(1, function()
-				screenGui:Destroy()
-				if config.OnVerified then config.OnVerified() end
-			end)
-		else
-			StatusLabel.Text = MansLibrary.Icons.cross .. " " .. errorMessage
-			StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-			VerifyBtn.Text = MansLibrary.Icons.key .. " VERIFY"
-			VerifyBtn.BackgroundColor3 = Themes.Colors[currentTheme].Accent
-		end
-	end
-	
-	VerifyBtn.MouseButton1Click:Connect(VerifyKey)
-	KeyInput.FocusLost:Connect(function(enterPressed) if enterPressed then VerifyKey() end end)
-	
-	return screenGui
-end
-
-function MansLibrary:CreateWindow(config)
-	config = config or {}
-	local titleText = config.Title or "MANS LIBRARY"
+	local titleText = config.Title or "PREMIUM UI"
 	local author = config.Author or ""
-	local folder = config.Folder or "MansLibrary"
+	local folder = config.Folder or "PremiumUI"
 	local currentTheme = config.Theme or "Silver"
-	local requireKey = config.RequireKey or false
-	local keyWindowConfig = config.KeyWindow or {}
-	
-	if requireKey and not KeySystem.IsUnlocked then
-		keyWindowConfig.Title = keyWindowConfig.Title or titleText
-		keyWindowConfig.Theme = keyWindowConfig.Theme or currentTheme
-		keyWindowConfig.OnVerified = function()
-			MansLibrary:CreateWindow({
-				Title = titleText, Author = author, Folder = folder, Theme = currentTheme, RequireKey = false
-			})
-		end
-		MansLibrary:CreateKeyWindow(keyWindowConfig)
-		return
-	end
 	
 	local screenGui = Create("ScreenGui", {Name = folder, ResetOnSpawn = false, Parent = (game:GetService("CoreGui") or Player:WaitForChild("PlayerGui"))})
 	local OpenButton = Create("ImageButton", {Size = UDim2.fromOffset(40, 40), Position = UDim2.new(0, 15, 0.5, -20), BackgroundColor3 = Themes.Colors[currentTheme].Secondary, Image = "rbxassetid://74666642456643", Parent = screenGui}, {Create("UICorner", {CornerRadius = UDim.new(1, 0)})})
@@ -336,8 +166,8 @@ function MansLibrary:CreateWindow(config)
 	end)
 
 	local TopBar = Create("Frame", {Size = UDim2.new(1, 0, 0, 45), BackgroundTransparency = 1, Parent = MainFrame})
-	Create("TextLabel", {Text = MansLibrary.Icons.diamond .. " " .. titleText:upper(), Font = Enum.Font.GothamBold, TextSize = 14, TextColor3 = Themes.Colors[currentTheme].Text, TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(12, 8), Size = UDim2.new(1, -60, 0, 18), Parent = TopBar})
-	if author ~= "" then Create("TextLabel", {Text = MansLibrary.Icons.user .. " " .. author, Font = Enum.Font.GothamMedium, TextSize = 9, TextColor3 = Themes.Colors[currentTheme].TextSecondary, TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(12, 26), Size = UDim2.new(1, -60, 0, 14), Parent = TopBar}) end
+	Create("TextLabel", {Text = Library.Icons.diamond .. " " .. titleText:upper(), Font = Enum.Font.GothamBold, TextSize = 14, TextColor3 = Themes.Colors[currentTheme].Text, TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(12, 8), Size = UDim2.new(1, -60, 0, 18), Parent = TopBar})
+	if author ~= "" then Create("TextLabel", {Text = Library.Icons.user .. " " .. author, Font = Enum.Font.GothamMedium, TextSize = 9, TextColor3 = Themes.Colors[currentTheme].TextSecondary, TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(12, 26), Size = UDim2.new(1, -60, 0, 14), Parent = TopBar}) end
 	
 	local CloseBtn = Create("ImageButton", {Size = UDim2.fromOffset(24, 24), Position = UDim2.new(1, -34, 0, 10), BackgroundTransparency = 1, Image = "rbxassetid://74666642456643", ImageColor3 = Themes.Colors[currentTheme].TextSecondary, Parent = TopBar})
 	
@@ -422,7 +252,7 @@ function MansLibrary:CreateWindow(config)
 	function Window:Tab(tabConfig)
 		tabConfig = tabConfig or {}
 		local name = tabConfig.Title or "Tab"
-		local icon = tabConfig.Icon or MansLibrary.Icons.folder
+		local icon = tabConfig.Icon or Library.Icons.folder
 		
 		local TabBtn = Create("TextButton", {Size = UDim2.new(0.85, 0, 0, 30), BackgroundColor3 = firstTab and Themes.Colors[currentTheme].Accent or Themes.Colors[currentTheme].Button, Text = icon .. " " .. name, TextColor3 = firstTab and Themes.Colors[currentTheme].Background or Themes.Colors[currentTheme].TextSecondary, Font = Enum.Font.GothamBold, TextSize = 11, Parent = Sidebar}, {Create("UICorner", {CornerRadius = UDim.new(0, 5)})})
 		
@@ -456,7 +286,7 @@ function MansLibrary:CreateWindow(config)
 		
 		function Tab:Section(config)
 			local title = config.Title or "Section"
-			local icon = config.Icon or MansLibrary.Icons.section
+			local icon = config.Icon or Library.Icons.section
 			local SectionFrame = Create("Frame", {Size = UDim2.new(0.96, 0, 0, 35), BackgroundColor3 = Themes.Colors[currentTheme].Button, BackgroundTransparency = 0.5, Parent = Page}, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
 			Create("TextLabel", {Name = "SectionTitle", Text = icon .. " " .. title:upper(), Font = Enum.Font.GothamBold, TextSize = 11, TextColor3 = Themes.Colors[currentTheme].Accent, TextXAlignment = "Left", BackgroundTransparency = 1, Position = UDim2.fromOffset(12, 0), Size = UDim2.new(1, -24, 1, 0), Parent = SectionFrame})
 			return SectionFrame
@@ -464,7 +294,7 @@ function MansLibrary:CreateWindow(config)
 		
 		function Tab:Paragraph(config)
 			local text = config.Text or ""
-			local icon = config.Icon or MansLibrary.Icons.paragraph
+			local icon = config.Icon or Library.Icons.paragraph
 			local ParaFrame = Create("Frame", {Size = UDim2.new(0.96, 0, 0, 0), BackgroundColor3 = Themes.Colors[currentTheme].Button, BackgroundTransparency = 0.5, AutomaticSize = Enum.AutomaticSize.Y, Parent = Page}, {Create("UICorner", {CornerRadius = UDim.new(0, 6)}), Create("UIPadding", {PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12), PaddingTop = UDim.new(0, 10), PaddingBottom = UDim.new(0, 10)})})
 			local ParaLabel = Create("TextLabel", {Text = icon .. " " .. text, Font = Enum.Font.GothamMedium, TextSize = 10, TextColor3 = Themes.Colors[currentTheme].TextSecondary, TextXAlignment = "Left", TextYAlignment = "Top", TextWrapped = true, BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, Parent = ParaFrame})
 			ParaFrame.Size = UDim2.new(0.96, 0, 0, ParaLabel.TextBounds.Y + 20)
@@ -473,7 +303,7 @@ function MansLibrary:CreateWindow(config)
 
 		function Tab:Button(config)
 			local text = config.Text or "Button"
-			local icon = config.Icon or MansLibrary.Icons.dot
+			local icon = config.Icon or Library.Icons.dot
 			local callback = config.Callback or function() end
 			local Btn = Create("TextButton", {Size = UDim2.new(0.96, 0, 0, 35), BackgroundColor3 = Themes.Colors[currentTheme].Button, Text = icon .. " " .. text, TextColor3 = Themes.Colors[currentTheme].Text, Font = Enum.Font.GothamMedium, TextSize = 11, Parent = Page}, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
 			ApplyPremiumBorder(Btn, 1, Themes.Colors[currentTheme].Accent)
@@ -482,7 +312,7 @@ function MansLibrary:CreateWindow(config)
 
 		function Tab:Toggle(config)
 			local text = config.Text or "Toggle"
-			local icon = config.Icon or MansLibrary.Icons.bolt
+			local icon = config.Icon or Library.Icons.bolt
 			local callback = config.Callback or function() end
 			local default = config.Default or false
 			local TglFrame = Create("Frame", {Size = UDim2.new(0.96, 0, 0, 35), BackgroundColor3 = Themes.Colors[currentTheme].Button, Parent = Page}, {Create("UICorner", {CornerRadius = UDim.new(0, 6)})})
@@ -503,7 +333,7 @@ function MansLibrary:CreateWindow(config)
 
 		function Tab:Slider(config)
 			local text = config.Text or "Slider"
-			local icon = config.Icon or MansLibrary.Icons.sliders
+			local icon = config.Icon or Library.Icons.sliders
 			local min = config.Min or 0
 			local max = config.Max or 100
 			local default = config.Default or 50
@@ -546,7 +376,7 @@ function MansLibrary:CreateWindow(config)
 
 		function Tab:Input(config)
 			local text = config.Text or "Input"
-			local icon = config.Icon or MansLibrary.Icons.edit
+			local icon = config.Icon or Library.Icons.edit
 			local placeholder = config.Placeholder or "Type here..."
 			local default = config.Default or ""
 			local callback = config.Callback or function() end
@@ -561,7 +391,7 @@ function MansLibrary:CreateWindow(config)
 
 		function Tab:Dropdown(config)
 			local text = config.Text or "Dropdown"
-			local icon = config.Icon or MansLibrary.Icons.menu
+			local icon = config.Icon or Library.Icons.menu
 			local options = config.Options or {}
 			local default = config.Default or (options[1] or "")
 			local callback = config.Callback or function() end
@@ -615,7 +445,7 @@ function MansLibrary:CreateWindow(config)
 		end
 		
 		function Tab:ThemeDropdown()
-			return Tab:Dropdown({Text = "Theme", Icon = MansLibrary.Icons.palette, Options = MansLibrary.ThemeList, Default = currentTheme, Callback = function(value) currentTheme = value ApplyTheme(value) MansLibrary:Notify("Theme", "Changed to " .. value, 2, MansLibrary.Icons.palette) end})
+			return Tab:Dropdown({Text = "Theme", Icon = Library.Icons.palette, Options = Library.ThemeList, Default = currentTheme, Callback = function(value) currentTheme = value ApplyTheme(value) Library:Notify("Theme", "Changed to " .. value, 2, Library.Icons.palette) end})
 		end
 
 		return Tab
@@ -628,4 +458,4 @@ function MansLibrary:CreateWindow(config)
 	return Window
 end
 
-return MansLibrary
+return Library
