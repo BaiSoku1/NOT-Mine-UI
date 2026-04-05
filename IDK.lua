@@ -93,20 +93,7 @@ function Library:Window(cfg)
     local TITLE = cfg.Title or "DeadShot Hub"
     local SUB = cfg.SubTitle or "Premium Edition"
     local VER = cfg.Version or "v18"
-    
-    -- Support both table and direct width/height parameters
     local W, H = 680, 480
-    if cfg.Size then
-        if type(cfg.Size) == "table" then
-            W = cfg.Size[1] or 680
-            H = cfg.Size[2] or 480
-        elseif type(cfg.Size) == "number" then
-            W = cfg.Size
-        end
-    end
-    if cfg.Width then W = cfg.Width end
-    if cfg.Height then H = cfg.Height end
-    
     local NAV_H = 54
     local TOP_H = 72
 
@@ -386,155 +373,6 @@ function Library:Window(cfg)
         new.Position = UDim2.new(1, 0, 0, 0)
         TweenService:Create(new, TweenInfo.new(0.18), {Position = UDim2.new(0, 0, 0, 0)}):Play()
         _current = name
-    end
-
-    -- Helper function to create a dropdown (used internally)
-    local function createDropdown(parent, items, defaultIndex, callback)
-        local dropdownHeight = 42
-        local expanded = false
-        local selectedIndex = defaultIndex or 1
-        local selectedItem = items[selectedIndex]
-        
-        local container = New("Frame", {
-            Size = UDim2.new(1, 0, 0, dropdownHeight),
-            BackgroundColor3 = C.Surface,
-            ClipsDescendants = true,
-            Parent = parent
-        }, {
-            New("UICorner", {CornerRadius = UDim.new(0, 8)}),
-            New("UIStroke", {Color = C.Accent2, Transparency = 0.5})
-        })
-        
-        local mainButton = New("TextButton", {
-            Size = UDim2.new(1, 0, 1, 0),
-            BackgroundColor3 = C.Surface,
-            Text = "",
-            AutoButtonColor = false,
-            Parent = container
-        }, {New("UICorner", {CornerRadius = UDim.new(0, 8)})})
-        
-        local selectedText = New("TextLabel", {
-            Text = selectedItem,
-            Size = UDim2.new(1, -40, 1, 0),
-            Position = UDim2.new(0, 12, 0, 0),
-            BackgroundTransparency = 1,
-            Font = Enum.Font.Gotham,
-            TextSize = 14,
-            TextColor3 = C.TextPrimary,
-            TextXAlignment = Enum.TextXAlignment.Left,
-            Parent = mainButton
-        })
-        
-        local arrow = New("TextLabel", {
-            Text = "▼",
-            Size = UDim2.new(0, 30, 1, 0),
-            Position = UDim2.new(1, -30, 0, 0),
-            BackgroundTransparency = 1,
-            Font = Enum.Font.GothamBold,
-            TextSize = 12,
-            TextColor3 = C.Accent1,
-            TextXAlignment = Enum.TextXAlignment.Center,
-            Parent = mainButton
-        })
-        
-        local dropdownList = New("Frame", {
-            Size = UDim2.new(1, 0, 0, dropdownHeight * #items),
-            Position = UDim2.new(0, 0, 1, 2),
-            BackgroundColor3 = C.SurfaceLight,
-            Visible = false,
-            ZIndex = 10,
-            Parent = container
-        }, {
-            New("UICorner", {CornerRadius = UDim.new(0, 8)}),
-            New("UIStroke", {Color = C.Accent1, Transparency = 0.5})
-        })
-        
-        local listLayout = New("UIListLayout", {
-            Padding = UDim.new(0, 2),
-            SortOrder = Enum.SortOrder.LayoutOrder,
-            Parent = dropdownList
-        })
-        
-        local dropdownButtons = {}
-        
-        for i, item in ipairs(items) do
-            local btn = New("TextButton", {
-                Text = item,
-                Size = UDim2.new(1, 0, 0, dropdownHeight - 4),
-                BackgroundColor3 = C.Surface,
-                Font = Enum.Font.Gotham,
-                TextSize = 13,
-                TextColor3 = C.TextSecondary,
-                AutoButtonColor = false,
-                Parent = dropdownList
-            }, {
-                New("UICorner", {CornerRadius = UDim.new(0, 6)})
-            })
-            
-            if i == selectedIndex then
-                btn.BackgroundColor3 = C.Accent1
-                btn.TextColor3 = C.TextPrimary
-            end
-            
-            btn.MouseEnter:Connect(function()
-                if i ~= selectedIndex then
-                    TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = C.SurfaceLight}):Play()
-                end
-            end)
-            btn.MouseLeave:Connect(function()
-                if i ~= selectedIndex then
-                    TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = C.Surface}):Play()
-                end
-            end)
-            
-            btn.MouseButton1Click:Connect(function()
-                selectedIndex = i
-                selectedItem = item
-                selectedText.Text = item
-                
-                -- Reset all dropdown buttons
-                for _, b in ipairs(dropdownButtons) do
-                    b.BackgroundColor3 = C.Surface
-                    b.TextColor3 = C.TextSecondary
-                end
-                btn.BackgroundColor3 = C.Accent1
-                btn.TextColor3 = C.TextPrimary
-                
-                -- Collapse dropdown
-                expanded = false
-                dropdownList.Visible = false
-                arrow.Text = "▼"
-                container.Size = UDim2.new(1, 0, 0, dropdownHeight)
-                
-                if callback then
-                    pcall(callback, item, i)
-                end
-            end)
-            
-            dropdownButtons[i] = btn
-        end
-        
-        listLayout:ApplyCellPadding()
-        
-        mainButton.MouseButton1Click:Connect(function()
-            expanded = not expanded
-            dropdownList.Visible = expanded
-            arrow.Text = expanded and "▲" or "▼"
-            
-            if expanded then
-                local newHeight = dropdownHeight + (dropdownHeight * #items) + 4
-                container.Size = UDim2.new(1, 0, 0, newHeight)
-                -- Bring dropdown to front
-                container.ZIndex = 20
-                task.delay(0.1, function()
-                    container.ZIndex = 1
-                end)
-            else
-                container.Size = UDim2.new(1, 0, 0, dropdownHeight)
-            end
-        end)
-        
-        return container
     end
 
     local Win = {}
@@ -821,40 +659,6 @@ function Library:Window(cfg)
                 Parent = f
             })
             return f
-        end
-
-        -- New Dropdown method
-        function Tab:Dropdown(label, items, defaultIndex, callback)
-            local cont = New("Frame", {
-                Size = UDim2.new(1, 0, 0, 42),
-                BackgroundColor3 = C.Surface,
-                Parent = page
-            }, {
-                New("UICorner", {CornerRadius = UDim.new(0, 10)}),
-                New("UIStroke", {Color = C.Accent2, Transparency = 0.5})
-            })
-            
-            New("TextLabel", {
-                Text = label,
-                Size = UDim2.new(1, 0, 0, 20),
-                Position = UDim2.new(0, 15, 0, 4),
-                BackgroundTransparency = 1,
-                Font = Enum.Font.Gotham,
-                TextSize = 12,
-                TextColor3 = C.TextMuted,
-                TextXAlignment = Enum.TextXAlignment.Left,
-                Parent = cont
-            })
-            
-            local dropdown = createDropdown(cont, items, defaultIndex or 1, function(item, index)
-                if callback then
-                    pcall(callback, item, index)
-                end
-            end)
-            dropdown.Position = UDim2.new(0, 0, 0, 22)
-            dropdown.Size = UDim2.new(1, 0, 0, 42)
-            
-            return cont
         end
 
         return Tab
